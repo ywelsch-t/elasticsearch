@@ -83,8 +83,8 @@ public class DeltaReducer extends Reducer {
 
     public InternalAggregation doReduce(Aggregations aggregationsTree, Aggregation aggregation) throws ReductionExecutionException {
         Object[] bucketProperties = (Object[]) aggregation.getProperty(fieldName);
-        double firstBucketValue = (double) bucketProperties[0];
-        double lastBucketValue = (double) bucketProperties[bucketProperties.length - 1];
+        double firstBucketValue = ((Number) bucketProperties[0]).doubleValue();
+        double lastBucketValue = ((Number) bucketProperties[bucketProperties.length - 1]).doubleValue();
         double deltaValue = lastBucketValue - firstBucketValue;
         if (this.gradient) {
             deltaValue = deltaValue / (bucketProperties.length - 1);
