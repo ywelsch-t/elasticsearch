@@ -330,7 +330,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        Filter internalFilter = constantScoreQuery.getFilter();
+        Filter internalFilter = (Filter) constantScoreQuery.getQuery();
         assertThat(internalFilter, instanceOf(MatchAllDocsFilter.class));
     }
 
@@ -1368,7 +1368,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(constantScoreQuery(termFilter("name.last", "banon"))).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        assertThat(((TermFilter) constantScoreQuery.getFilter()).getTerm(), equalTo(new Term("name.last", "banon")));
+        assertThat(((TermFilter) constantScoreQuery.getQuery()).getTerm(), equalTo(new Term("name.last", "banon")));
     }
 
     @Test
@@ -1378,7 +1378,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        assertThat(((TermFilter) constantScoreQuery.getFilter()).getTerm(), equalTo(new Term("name.last", "banon")));
+        assertThat(((TermFilter) constantScoreQuery.getQuery()).getTerm(), equalTo(new Term("name.last", "banon")));
     }
 
     @Test
@@ -1398,7 +1398,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         assertThat(parsedQuery, instanceOf(FunctionScoreQuery.class));
         FunctionScoreQuery functionScoreQuery = (FunctionScoreQuery) parsedQuery;
         assertThat(functionScoreQuery.getSubQuery() instanceof ConstantScoreQuery, equalTo(true));
-        assertThat(((ConstantScoreQuery) functionScoreQuery.getSubQuery()).getFilter() instanceof MatchAllDocsFilter, equalTo(true));
+        assertThat(((ConstantScoreQuery) functionScoreQuery.getSubQuery()).getQuery() instanceof MatchAllDocsFilter, equalTo(true));
         assertThat((double) ((BoostScoreFunction) functionScoreQuery.getFunction()).getBoost(), closeTo(1.3, 0.001));
     }
 
@@ -1871,7 +1871,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         assertThat(parsedQuery.namedFilters().containsKey("test"), equalTo(true));
         assertThat(parsedQuery.query(), instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery.query();
-        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getFilter();
+        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.lat(), closeTo(40, 0.00001));
         assertThat(filter.lon(), closeTo(-70, 0.00001));
@@ -1885,7 +1885,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getFilter();
+        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.lat(), closeTo(40, 0.00001));
         assertThat(filter.lon(), closeTo(-70, 0.00001));
@@ -1899,7 +1899,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getFilter();
+        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.lat(), closeTo(40, 0.00001));
         assertThat(filter.lon(), closeTo(-70, 0.00001));
@@ -1913,7 +1913,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getFilter();
+        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.lat(), closeTo(40, 0.00001));
         assertThat(filter.lon(), closeTo(-70, 0.00001));
@@ -1927,7 +1927,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getFilter();
+        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.lat(), closeTo(40, 0.00001));
         assertThat(filter.lon(), closeTo(-70, 0.00001));
@@ -1941,7 +1941,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getFilter();
+        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.lat(), closeTo(40, 0.00001));
         assertThat(filter.lon(), closeTo(-70, 0.00001));
@@ -1955,7 +1955,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getFilter();
+        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.lat(), closeTo(40, 0.00001));
         assertThat(filter.lon(), closeTo(-70, 0.00001));
@@ -1969,7 +1969,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getFilter();
+        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.lat(), closeTo(40, 0.00001));
         assertThat(filter.lon(), closeTo(-70, 0.00001));
@@ -1983,7 +1983,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getFilter();
+        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.lat(), closeTo(40, 0.00001));
         assertThat(filter.lon(), closeTo(-70, 0.00001));
@@ -1997,7 +1997,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getFilter();
+        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.lat(), closeTo(40, 0.00001));
         assertThat(filter.lon(), closeTo(-70, 0.00001));
@@ -2011,7 +2011,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getFilter();
+        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.lat(), closeTo(40, 0.00001));
         assertThat(filter.lon(), closeTo(-70, 0.00001));
@@ -2025,7 +2025,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getFilter();
+        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.lat(), closeTo(40, 0.00001));
         assertThat(filter.lon(), closeTo(-70, 0.00001));
@@ -2039,7 +2039,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getFilter();
+        GeoDistanceFilter filter = (GeoDistanceFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.lat(), closeTo(40, 0.00001));
         assertThat(filter.lon(), closeTo(-70, 0.00001));
@@ -2054,7 +2054,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         assertThat(parsedQuery.query(), instanceOf(ConstantScoreQuery.class));
         assertThat(parsedQuery.namedFilters().containsKey("test"), equalTo(true));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery.query();
-        InMemoryGeoBoundingBoxFilter filter = (InMemoryGeoBoundingBoxFilter) constantScoreQuery.getFilter();
+        InMemoryGeoBoundingBoxFilter filter = (InMemoryGeoBoundingBoxFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.topLeft().lat(), closeTo(40, 0.00001));
         assertThat(filter.topLeft().lon(), closeTo(-70, 0.00001));
@@ -2070,7 +2070,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        InMemoryGeoBoundingBoxFilter filter = (InMemoryGeoBoundingBoxFilter) constantScoreQuery.getFilter();
+        InMemoryGeoBoundingBoxFilter filter = (InMemoryGeoBoundingBoxFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.topLeft().lat(), closeTo(40, 0.00001));
         assertThat(filter.topLeft().lon(), closeTo(-70, 0.00001));
@@ -2085,7 +2085,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        InMemoryGeoBoundingBoxFilter filter = (InMemoryGeoBoundingBoxFilter) constantScoreQuery.getFilter();
+        InMemoryGeoBoundingBoxFilter filter = (InMemoryGeoBoundingBoxFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.topLeft().lat(), closeTo(40, 0.00001));
         assertThat(filter.topLeft().lon(), closeTo(-70, 0.00001));
@@ -2100,7 +2100,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        InMemoryGeoBoundingBoxFilter filter = (InMemoryGeoBoundingBoxFilter) constantScoreQuery.getFilter();
+        InMemoryGeoBoundingBoxFilter filter = (InMemoryGeoBoundingBoxFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.topLeft().lat(), closeTo(40, 0.00001));
         assertThat(filter.topLeft().lon(), closeTo(-70, 0.00001));
@@ -2115,7 +2115,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        InMemoryGeoBoundingBoxFilter filter = (InMemoryGeoBoundingBoxFilter) constantScoreQuery.getFilter();
+        InMemoryGeoBoundingBoxFilter filter = (InMemoryGeoBoundingBoxFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.topLeft().lat(), closeTo(40, 0.00001));
         assertThat(filter.topLeft().lon(), closeTo(-70, 0.00001));
@@ -2130,7 +2130,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        InMemoryGeoBoundingBoxFilter filter = (InMemoryGeoBoundingBoxFilter) constantScoreQuery.getFilter();
+        InMemoryGeoBoundingBoxFilter filter = (InMemoryGeoBoundingBoxFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.topLeft().lat(), closeTo(40, 0.00001));
         assertThat(filter.topLeft().lon(), closeTo(-70, 0.00001));
@@ -2145,7 +2145,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        InMemoryGeoBoundingBoxFilter filter = (InMemoryGeoBoundingBoxFilter) constantScoreQuery.getFilter();
+        InMemoryGeoBoundingBoxFilter filter = (InMemoryGeoBoundingBoxFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.topLeft().lat(), closeTo(40, 0.00001));
         assertThat(filter.topLeft().lon(), closeTo(-70, 0.00001));
@@ -2162,7 +2162,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         assertThat(parsedQuery.namedFilters().containsKey("test"), equalTo(true));
         assertThat(parsedQuery.query(), instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery.query();
-        GeoPolygonFilter filter = (GeoPolygonFilter) constantScoreQuery.getFilter();
+        GeoPolygonFilter filter = (GeoPolygonFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.points().length, equalTo(4));
         assertThat(filter.points()[0].lat(), closeTo(40, 0.00001));
@@ -2203,7 +2203,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        GeoPolygonFilter filter = (GeoPolygonFilter) constantScoreQuery.getFilter();
+        GeoPolygonFilter filter = (GeoPolygonFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.points().length, equalTo(4));
         assertThat(filter.points()[0].lat(), closeTo(40, 0.00001));
@@ -2221,7 +2221,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        GeoPolygonFilter filter = (GeoPolygonFilter) constantScoreQuery.getFilter();
+        GeoPolygonFilter filter = (GeoPolygonFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.points().length, equalTo(4));
         assertThat(filter.points()[0].lat(), closeTo(40, 0.00001));
@@ -2239,7 +2239,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        GeoPolygonFilter filter = (GeoPolygonFilter) constantScoreQuery.getFilter();
+        GeoPolygonFilter filter = (GeoPolygonFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.points().length, equalTo(4));
         assertThat(filter.points()[0].lat(), closeTo(40, 0.00001));
@@ -2257,7 +2257,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        GeoPolygonFilter filter = (GeoPolygonFilter) constantScoreQuery.getFilter();
+        GeoPolygonFilter filter = (GeoPolygonFilter) constantScoreQuery.getQuery();
         assertThat(filter.fieldName(), equalTo("location"));
         assertThat(filter.points().length, equalTo(4));
         assertThat(filter.points()[0].lat(), closeTo(40, 0.00001));
@@ -2275,7 +2275,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        assertThat(constantScoreQuery.getFilter(), instanceOf(IntersectsPrefixTreeFilter.class));
+        assertThat(constantScoreQuery.getQuery(), instanceOf(IntersectsPrefixTreeFilter.class));
     }
 
     @Test
@@ -2285,7 +2285,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery csq = (ConstantScoreQuery) parsedQuery;
-        assertThat(csq.getFilter(), instanceOf(IntersectsPrefixTreeFilter.class));
+        assertThat(csq.getQuery(), instanceOf(IntersectsPrefixTreeFilter.class));
     }
 
     @Test
@@ -2527,9 +2527,9 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         IndexQueryParserService queryParser = indexService.queryParserService();
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
-        assertThat(((ConstantScoreQuery) parsedQuery).getFilter(), instanceOf(CustomQueryWrappingFilter.class));
-        assertThat(((CustomQueryWrappingFilter) ((ConstantScoreQuery) parsedQuery).getFilter()).getQuery(), instanceOf(ParentConstantScoreQuery.class));
-        assertThat(((CustomQueryWrappingFilter) ((ConstantScoreQuery) parsedQuery).getFilter()).getQuery().toString(), equalTo("parent_filter[foo](filtered(*:*)->cache(_type:foo))"));
+        assertThat(((ConstantScoreQuery) parsedQuery).getQuery(), instanceOf(CustomQueryWrappingFilter.class));
+        assertThat(((CustomQueryWrappingFilter) ((ConstantScoreQuery) parsedQuery).getQuery()).getQuery(), instanceOf(ParentConstantScoreQuery.class));
+        assertThat(((CustomQueryWrappingFilter) ((ConstantScoreQuery) parsedQuery).getQuery()).getQuery().toString(), equalTo("parent_filter[foo](filtered(*:*)->cache(_type:foo))"));
         SearchContext.removeCurrent();
     }
 }
