@@ -73,10 +73,11 @@ public class Queries {
         return q;
     }
 
+    // nocommit: check what is using this
     public static boolean isConstantMatchAllQuery(Query query) {
         if (query instanceof ConstantScoreQuery) {
             ConstantScoreQuery scoreQuery = (ConstantScoreQuery) query;
-            if (scoreQuery.getFilter() instanceof MatchAllDocsFilter) {
+            if (scoreQuery.getQuery() instanceof MatchAllDocsQuery) {
                 return true;
             }
         }

@@ -22,10 +22,11 @@ package org.elasticsearch.search.aggregations.bucket.nested;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.*;
-import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.FilterCachingPolicy;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.QueryWrapperFilter;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.common.compress.CompressedString;
@@ -128,7 +129,7 @@ public class NestedAggregatorTest extends ElasticsearchSingleNodeLuceneTestCase 
         // A regular search always exclude nested docs, so we use NonNestedDocsFilter.INSTANCE here (otherwise MatchAllDocsQuery would be sufficient)
         // We exclude root doc with uid type#2, this will trigger the bug if we don't reset the root doc when we process a new segment, because
         // root doc type#3 and root doc type#1 have the same segment docid
-        searcher.search(new ConstantScoreQuery(new AndFilter(Arrays.asList(NonNestedDocsFilter.INSTANCE, new NotFilter(new TermFilter(new Term(UidFieldMapper.NAME, "type#2")))))), collector);
+        searcher.search(new ConstantScoreQuery(new AndFilter(Arrays.asList(NonNestedDocsFilter.INSTANCE, new NotFilter(new QueryWrapperFilter(new TermQuery(new Term(UidFieldMapper.NAME, "type#2"))))))), collector);
         collector.postCollection();
 
         Nested nested = (Nested) aggs[0].buildAggregation(0);
