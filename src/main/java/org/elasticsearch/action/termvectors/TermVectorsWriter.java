@@ -52,7 +52,7 @@ final class TermVectorsWriter {
     void setFields(Fields termVectorsByField, Set<String> selectedFields, EnumSet<Flag> flags, Fields topLevelFields, @Nullable AggregatedDfs dfs) throws IOException {
         int numFieldsWritten = 0;
         TermsEnum iterator = null;
-        DocsAndPositionsEnum docsAndPosEnum = null;
+        PostingsEnum postings = null;
         DocsEnum docsEnum = null;
         TermsEnum topLevelIterator = null;
         for (String field : termVectorsByField) {
@@ -97,11 +97,11 @@ final class TermVectorsWriter {
                 }
                 if (useDocsAndPos) {
                     // given we have pos or offsets
-                    docsAndPosEnum = writeTermWithDocsAndPos(iterator, docsAndPosEnum, positions, offsets, payloads);
+                    postings = writeTermWithDocsAndPos(iterator, postings, positions, offsets, payloads);
                 } else {
                     // if we do not have the positions stored, we need to
                     // get the frequency from a DocsEnum.
-                    docsEnum = writeTermWithDocsOnly(iterator, docsEnum);
+                    postings = writeTermWithDocsOnly(iterator, postings);
                 }
             }
             numFieldsWritten++;
@@ -127,40 +127,40 @@ final class TermVectorsWriter {
         return header.bytes();
     }
 
-    private DocsEnum writeTermWithDocsOnly(TermsEnum iterator, DocsEnum docsEnum) throws IOException {
-        docsEnum = iterator.docs(null, docsEnum);
-        int nextDoc = docsEnum.nextDoc();
-        assert nextDoc != DocsEnum.NO_MORE_DOCS;
-        writeFreq(docsEnum.freq());
-        nextDoc = docsEnum.nextDoc();
-        assert nextDoc == DocsEnum.NO_MORE_DOCS;
-        return docsEnum;
+    private PostingsEnum writeTermWithDocsOnly(TermsEnum iterator, PostingsEnum postings) throws IOException {
+        postings = iterator.postings(null, postings);
+        int nextDoc = postings.nextDoc();
+        assert nextDoc != PostingsEnum.NO_MORE_DOCS;
+        writeFreq(postings.freq());
+        nextDoc = postings.nextDoc();
+        assert nextDoc == PostingsEnum.NO_MORE_DOCS;
+        return postings;
     }
 
-    private DocsAndPositionsEnum writeTermWithDocsAndPos(TermsEnum iterator, DocsAndPositionsEnum docsAndPosEnum, boolean positions,
-                                                         boolean offsets, boolean payloads) throws IOException {
-        docsAndPosEnum = iterator.docsAndPositions(null, docsAndPosEnum);
+    private PostingsEnum writeTermWithDocsAndPos(TermsEnum iterator, PostingsEnum postings, boolean positions,
+                                                 boolean offsets, boolean payloads) throws IOException {
+        postings = iterator.postings(null, postings);
         // for each term (iterator next) in this field (field)
         // iterate over the docs (should only be one)
-        int nextDoc = docsAndPosEnum.nextDoc();
-        assert nextDoc != DocsEnum.NO_MORE_DOCS;
-        final int freq = docsAndPosEnum.freq();
+        int nextDoc = postings.nextDoc();
+        assert nextDoc != PostingsEnum.NO_MORE_DOCS;
+        final int freq = postings.freq();
         writeFreq(freq);
         for (int j = 0; j < freq; j++) {
-            int curPos = docsAndPosEnum.nextPosition();
+            int curPos = postings.nextPosition();
             if (positions) {
                 writePosition(curPos);
             }
             if (offsets) {
-                writeOffsets(docsAndPosEnum.startOffset(), docsAndPosEnum.endOffset());
+                writeOffsets(postings.startOffset(), postings.endOffset());
             }
             if (payloads) {
-                writePayload(docsAndPosEnum.getPayload());
+                writePayload(postings.getPayload());
             }
         }
-        nextDoc = docsAndPosEnum.nextDoc();
-        assert nextDoc == DocsEnum.NO_MORE_DOCS;
-        return docsAndPosEnum;
+        nextDoc = postings.nextDoc();
+        assert nextDoc == PostingsEnum.NO_MORE_DOCS;
+        return postings;
     }
 
     private void writePayload(BytesRef payload) throws IOException {
