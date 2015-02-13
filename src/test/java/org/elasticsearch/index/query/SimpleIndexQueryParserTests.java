@@ -856,22 +856,22 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         assertThat(iterator.hasNext(), equalTo(true));
         FilterClause clause = iterator.next();
         assertThat(clause.getOccur(), equalTo(BooleanClause.Occur.MUST));
-        assertThat(((TermFilter) clause.getFilter()).getTerm(), equalTo(new Term("name.first", "shay1")));
+        assertTermFilterEquals(new Term("name.first", "shay1"), clause.getFilter());
 
         assertThat(iterator.hasNext(), equalTo(true));
         clause = iterator.next();
         assertThat(clause.getOccur(), equalTo(BooleanClause.Occur.MUST));
-        assertThat(((TermFilter) clause.getFilter()).getTerm(), equalTo(new Term("name.first", "shay4")));
+        assertTermFilterEquals(new Term("name.first", "shay4"), clause.getFilter());
 
         assertThat(iterator.hasNext(), equalTo(true));
         clause = iterator.next();
         assertThat(clause.getOccur(), equalTo(BooleanClause.Occur.MUST_NOT));
-        assertThat(((TermFilter) clause.getFilter()).getTerm(), equalTo(new Term("name.first", "shay2")));
+        assertTermFilterEquals(new Term("name.first", "shay2"), clause.getFilter());
 
         assertThat(iterator.hasNext(), equalTo(true));
         clause = iterator.next();
         assertThat(clause.getOccur(), equalTo(BooleanClause.Occur.SHOULD));
-        assertThat(((TermFilter) clause.getFilter()).getTerm(), equalTo(new Term("name.first", "shay3")));
+        assertTermFilterEquals(new Term("name.first", "shay3"), clause.getFilter());
 
         assertThat(iterator.hasNext(), equalTo(false));
     }
@@ -890,22 +890,22 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         assertThat(iterator.hasNext(), equalTo(true));
         FilterClause clause = iterator.next();
         assertThat(clause.getOccur(), equalTo(BooleanClause.Occur.MUST));
-        assertThat(((TermFilter) clause.getFilter()).getTerm(), equalTo(new Term("name.first", "shay1")));
+        assertTermFilterEquals(new Term("name.first", "shay1"), clause.getFilter());
 
         assertThat(iterator.hasNext(), equalTo(true));
         clause = iterator.next();
         assertThat(clause.getOccur(), equalTo(BooleanClause.Occur.MUST));
-        assertThat(((TermFilter) clause.getFilter()).getTerm(), equalTo(new Term("name.first", "shay4")));
+        assertTermFilterEquals(new Term("name.first", "shay4"), clause.getFilter());
 
         assertThat(iterator.hasNext(), equalTo(true));
         clause = iterator.next();
         assertThat(clause.getOccur(), equalTo(BooleanClause.Occur.MUST_NOT));
-        assertThat(((TermFilter) clause.getFilter()).getTerm(), equalTo(new Term("name.first", "shay2")));
+        assertTermFilterEquals(new Term("name.first", "shay2"), clause.getFilter());
 
         assertThat(iterator.hasNext(), equalTo(true));
         clause = iterator.next();
         assertThat(clause.getOccur(), equalTo(BooleanClause.Occur.SHOULD));
-        assertThat(((TermFilter) clause.getFilter()).getTerm(), equalTo(new Term("name.first", "shay3")));
+        assertTermFilterEquals(new Term("name.first", "shay3"), clause.getFilter());
 
         assertThat(iterator.hasNext(), equalTo(false));
     }
@@ -917,10 +917,10 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
 
-        AndFilter andFilter = (AndFilter) constantScoreQuery.getFilter();
+        AndFilter andFilter = (AndFilter) constantScoreQuery.getQuery();
         assertThat(andFilter.filters().size(), equalTo(2));
-        assertThat(((TermFilter) andFilter.filters().get(0)).getTerm(), equalTo(new Term("name.first", "shay1")));
-        assertThat(((TermFilter) andFilter.filters().get(1)).getTerm(), equalTo(new Term("name.first", "shay4")));
+        assertTermFilterEquals(new Term("name.first", "shay1"), andFilter.filters().get(0));
+        assertTermFilterEquals(new Term("name.first", "shay4"), andFilter.filters().get(1));
     }
 
     @Test
@@ -933,8 +933,8 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
 
         AndFilter andFilter = (AndFilter) filteredQuery.getFilter();
         assertThat(andFilter.filters().size(), equalTo(2));
-        assertThat(((TermFilter) andFilter.filters().get(0)).getTerm(), equalTo(new Term("name.first", "shay1")));
-        assertThat(((TermFilter) andFilter.filters().get(1)).getTerm(), equalTo(new Term("name.first", "shay4")));
+        assertTermFilterEquals(new Term("name.first", "shay1"), andFilter.filters().get(0));
+        assertTermFilterEquals(new Term("name.first", "shay4"), andFilter.filters().get(1));
     }
 
     @Test
@@ -948,8 +948,8 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
 
         AndFilter andFilter = (AndFilter) filteredQuery.getFilter();
         assertThat(andFilter.filters().size(), equalTo(2));
-        assertThat(((TermFilter) andFilter.filters().get(0)).getTerm(), equalTo(new Term("name.first", "shay1")));
-        assertThat(((TermFilter) andFilter.filters().get(1)).getTerm(), equalTo(new Term("name.first", "shay4")));
+        assertTermFilterEquals(new Term("name.first", "shay1"), andFilter.filters().get(0));
+        assertTermFilterEquals(new Term("name.first", "shay4"), andFilter.filters().get(1));
     }
 
     @Test
@@ -962,8 +962,8 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
 
         AndFilter andFilter = (AndFilter) filteredQuery.getFilter();
         assertThat(andFilter.filters().size(), equalTo(2));
-        assertThat(((TermFilter) andFilter.filters().get(0)).getTerm(), equalTo(new Term("name.first", "shay1")));
-        assertThat(((TermFilter) andFilter.filters().get(1)).getTerm(), equalTo(new Term("name.first", "shay4")));
+        assertTermFilterEquals(new Term("name.first", "shay1"), andFilter.filters().get(0));
+        assertTermFilterEquals(new Term("name.first", "shay4"), andFilter.filters().get(1));
     }
 
     @Test
@@ -973,10 +973,10 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
 
-        OrFilter andFilter = (OrFilter) constantScoreQuery.getFilter();
+        OrFilter andFilter = (OrFilter) constantScoreQuery.getQuery();
         assertThat(andFilter.filters().size(), equalTo(2));
-        assertThat(((TermFilter) andFilter.filters().get(0)).getTerm(), equalTo(new Term("name.first", "shay1")));
-        assertThat(((TermFilter) andFilter.filters().get(1)).getTerm(), equalTo(new Term("name.first", "shay4")));
+        assertTermFilterEquals(new Term("name.first", "shay1"), andFilter.filters().get(0));
+        assertTermFilterEquals(new Term("name.first", "shay4"), andFilter.filters().get(1));
     }
 
     @Test
@@ -989,8 +989,8 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
 
         OrFilter orFilter = (OrFilter) filteredQuery.getFilter();
         assertThat(orFilter.filters().size(), equalTo(2));
-        assertThat(((TermFilter) orFilter.filters().get(0)).getTerm(), equalTo(new Term("name.first", "shay1")));
-        assertThat(((TermFilter) orFilter.filters().get(1)).getTerm(), equalTo(new Term("name.first", "shay4")));
+        assertTermFilterEquals(new Term("name.first", "shay1"), orFilter.filters().get(0));
+        assertTermFilterEquals(new Term("name.first", "shay4"), orFilter.filters().get(1));;
     }
 
     @Test
@@ -1003,8 +1003,8 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
 
         OrFilter orFilter = (OrFilter) filteredQuery.getFilter();
         assertThat(orFilter.filters().size(), equalTo(2));
-        assertThat(((TermFilter) orFilter.filters().get(0)).getTerm(), equalTo(new Term("name.first", "shay1")));
-        assertThat(((TermFilter) orFilter.filters().get(1)).getTerm(), equalTo(new Term("name.first", "shay4")));
+        assertTermFilterEquals(new Term("name.first", "shay1"), orFilter.filters().get(0));
+        assertTermFilterEquals(new Term("name.first", "shay4"), orFilter.filters().get(1));
     }
 
     @Test
@@ -1014,8 +1014,8 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
 
-        NotFilter notFilter = (NotFilter) constantScoreQuery.getFilter();
-        assertThat(((TermFilter) notFilter.filter()).getTerm(), equalTo(new Term("name.first", "shay1")));
+        NotFilter notFilter = (NotFilter) constantScoreQuery.getQuery();
+        assertTermFilterEquals(new Term("name.first", "shay1"), notFilter.filter());
     }
 
     @Test
@@ -1028,7 +1028,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         assertThat(((TermQuery) filteredQuery.getQuery()).getTerm(), equalTo(new Term("name.first", "shay")));
 
         NotFilter notFilter = (NotFilter) filteredQuery.getFilter();
-        assertThat(((TermFilter) notFilter.filter()).getTerm(), equalTo(new Term("name.first", "shay1")));
+        assertTermFilterEquals(new Term("name.first", "shay1"), notFilter.filter());
     }
 
     @Test
@@ -1041,7 +1041,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         assertThat(((TermQuery) filteredQuery.getQuery()).getTerm(), equalTo(new Term("name.first", "shay")));
 
         NotFilter notFilter = (NotFilter) filteredQuery.getFilter();
-        assertThat(((TermFilter) notFilter.filter()).getTerm(), equalTo(new Term("name.first", "shay1")));
+        assertTermFilterEquals(new Term("name.first", "shay1"), notFilter.filter());
     }
 
     @Test
@@ -1054,7 +1054,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         assertThat(((TermQuery) filteredQuery.getQuery()).getTerm(), equalTo(new Term("name.first", "shay")));
 
         NotFilter notFilter = (NotFilter) filteredQuery.getFilter();
-        assertThat(((TermFilter) notFilter.filter()).getTerm(), equalTo(new Term("name.first", "shay1")));
+        assertTermFilterEquals(new Term("name.first", "shay1"), notFilter.filter());
     }
 
     @Test
@@ -1225,7 +1225,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         assertThat(parsedQuery, instanceOf(FilteredQuery.class));
         FilteredQuery filteredQuery = (FilteredQuery) parsedQuery;
         assertThat(((TermQuery) filteredQuery.getQuery()).getTerm(), equalTo(new Term("name.first", "shay")));
-        assertThat(((TermFilter) filteredQuery.getFilter()).getTerm(), equalTo(new Term("name.last", "banon")));
+        assertTermFilterEquals(new Term("name.last", "banon"), filteredQuery.getFilter());
     }
 
     @Test
@@ -1236,7 +1236,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         assertThat(parsedQuery, instanceOf(FilteredQuery.class));
         FilteredQuery filteredQuery = (FilteredQuery) parsedQuery;
         assertThat(((TermQuery) filteredQuery.getQuery()).getTerm(), equalTo(new Term("name.first", "shay")));
-        assertThat(((TermFilter) filteredQuery.getFilter()).getTerm(), equalTo(new Term("name.last", "banon")));
+        assertTermFilterEquals(new Term("name.last", "banon"), filteredQuery.getFilter());
     }
 
     @Test
@@ -1247,7 +1247,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         assertThat(parsedQuery, instanceOf(FilteredQuery.class));
         FilteredQuery filteredQuery = (FilteredQuery) parsedQuery;
         assertThat(((TermQuery) filteredQuery.getQuery()).getTerm(), equalTo(new Term("name.first", "shay")));
-        assertThat(((TermFilter) filteredQuery.getFilter()).getTerm(), equalTo(new Term("name.last", "banon")));
+        assertTermFilterEquals(new Term("name.last", "banon"), filteredQuery.getFilter());
     }
 
     @Test
@@ -1277,8 +1277,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         WildcardQuery wildcardQuery = (WildcardQuery) filteredQuery.getQuery();
         assertThat(wildcardQuery.getTerm(), equalTo(new Term("name.first", "sh*")));
         assertThat((double) wildcardQuery.getBoost(), closeTo(1.1, 0.001));
-
-        assertThat(((TermFilter) filteredQuery.getFilter()).getTerm(), equalTo(new Term("name.last", "banon")));
+        assertTermFilterEquals(new Term("name.last", "banon"), filteredQuery.getFilter());
     }
 
     @Test
@@ -1302,10 +1301,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(FilteredQuery.class));
         FilteredQuery filteredQuery = (FilteredQuery) parsedQuery;
-        assertThat(filteredQuery.getFilter(), instanceOf(TermFilter.class));
-        TermFilter termFilter = (TermFilter) filteredQuery.getFilter();
-        assertThat(termFilter.getTerm().field(), equalTo("name.last"));
-        assertThat(termFilter.getTerm().text(), equalTo("banon"));
+        assertTermFilterEquals(new Term("name.last", "banon"), filteredQuery.getFilter());
     }
 
     @Test
@@ -1316,10 +1312,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         assertThat(parsedQuery.namedFilters().containsKey("test"), equalTo(true));
         assertThat(parsedQuery.query(), instanceOf(FilteredQuery.class));
         FilteredQuery filteredQuery = (FilteredQuery) parsedQuery.query();
-        assertThat(filteredQuery.getFilter(), instanceOf(TermFilter.class));
-        TermFilter termFilter = (TermFilter) filteredQuery.getFilter();
-        assertThat(termFilter.getTerm().field(), equalTo("name.last"));
-        assertThat(termFilter.getTerm().text(), equalTo("banon"));
+        assertTermFilterEquals(new Term("name.last", "banon"), filteredQuery.getFilter());
     }
 
     @Test
@@ -1368,7 +1361,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(constantScoreQuery(termFilter("name.last", "banon"))).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        assertThat(((TermFilter) constantScoreQuery.getQuery()).getTerm(), equalTo(new Term("name.last", "banon")));
+        assertTermFilterEquals(new Term("name.last", "banon"), constantScoreQuery.getQuery());
     }
 
     @Test
@@ -1378,7 +1371,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         Query parsedQuery = queryParser.parse(query).query();
         assertThat(parsedQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) parsedQuery;
-        assertThat(((TermFilter) constantScoreQuery.getQuery()).getTerm(), equalTo(new Term("name.last", "banon")));
+        assertTermFilterEquals(new Term("name.last", "banon"), constantScoreQuery.getQuery());
     }
 
     @Test
@@ -2426,9 +2419,7 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         ParsedFilter parsedQuery = queryParser.parseInnerFilter(parser);
         assertThat(parsedQuery.filter(), instanceOf(QueryWrapperFilter.class));
         assertThat(((QueryWrapperFilter) parsedQuery.filter()).getQuery(), instanceOf(FilteredQuery.class));
-        assertThat(((FilteredQuery) ((QueryWrapperFilter) parsedQuery.filter()).getQuery()).getFilter(), instanceOf(TermFilter.class));
-        TermFilter filter = (TermFilter) ((FilteredQuery) ((QueryWrapperFilter) parsedQuery.filter()).getQuery()).getFilter();
-        assertThat(filter.getTerm().toString(), equalTo("text:apache"));
+        assertTermFilterEquals(new Term("text", "apache"), ((FilteredQuery) ((QueryWrapperFilter) parsedQuery.filter()).getQuery()).getFilter());
     }
 
     @Test
@@ -2531,5 +2522,12 @@ public class SimpleIndexQueryParserTests extends ElasticsearchSingleNodeTest {
         assertThat(((CustomQueryWrappingFilter) ((ConstantScoreQuery) parsedQuery).getQuery()).getQuery(), instanceOf(ParentConstantScoreQuery.class));
         assertThat(((CustomQueryWrappingFilter) ((ConstantScoreQuery) parsedQuery).getQuery()).getQuery().toString(), equalTo("parent_filter[foo](filtered(*:*)->cache(_type:foo))"));
         SearchContext.removeCurrent();
+    }
+    
+    static void assertTermFilterEquals(Term expected, Query query) {
+        assertThat(query, instanceOf(QueryWrapperFilter.class));
+        Query inner = ((QueryWrapperFilter)query).getQuery();
+        assertThat(inner, instanceOf(TermQuery.class));
+        assertEquals(expected, ((TermQuery)inner).getTerm());
     }
 }
