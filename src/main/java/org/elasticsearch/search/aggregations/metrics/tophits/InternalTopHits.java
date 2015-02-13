@@ -90,11 +90,33 @@ public class InternalTopHits extends InternalMetricsAggregation implements TopHi
         return searchHits;
     }
 
+    private TopFieldDocs asTopFieldDocs(TopDocs topDocs) {
+        if (topDocs instanceof TopFieldDocs) {
+            return (TopFieldDocs) topDocs;
+        } else {
+            // TODO: fix whoever is doing this!
+            assert topDocs.scoreDocs.length == 0;
+            return new TopFieldDocs(0, Lucene.EMPTY_SCORE_DOCS, null, 0.0f);
+        }
+    }
+
     @Override
     public InternalAggregation reduce(ReduceContext reduceContext) {
         List<InternalAggregation> aggregations = reduceContext.aggregations();
         InternalSearchHits[] shardHits = new InternalSearchHits[aggregations.size()];
+
+        // Find non-empty TopDocs:
         TopDocs topDocs = this.topDocs;
+        if (topDocs.scoreDocs.length == 0) {
+            for(InternalAggregation agg : aggregations) {
+                InternalTopHits hits = (InternalTopHits) agg;
+                if (hits.topDocs.scoreDocs.length > 0) {
+                    topDocs = hits.topDocs;
+                    break;
+                }
+            }
+        }
+
         TopDocs reducedTopDocs;
         if (topDocs instanceof TopFieldDocs) {
             Sort sort = new Sort(((TopFieldDocs) topDocs).fields);
@@ -103,12 +125,8 @@ public class InternalTopHits extends InternalMetricsAggregation implements TopHi
             for (int i = 0; i < shardDocs.length; i++) {
                 InternalTopHits topHitsAgg = (InternalTopHits) aggregations.get(i);
                 // nocommit is this really safe?  our topDocs is a TopFieldDocs...
-                shardDocs[i] = (TopFieldDocs) topHitsAgg.topDocs;
+                shardDocs[i] = asTopFieldDocs(topHitsAgg.topDocs);
                 shardHits[i] = topHitsAgg.searchHits;
-                if (topDocs.scoreDocs.length == 0) {
-                    topDocs = topHitsAgg.topDocs;
-                }
-
             }
 
             try {
@@ -134,9 +152,6 @@ public class InternalTopHits extends InternalMetricsAggregation implements TopHi
                 InternalTopHits topHitsAgg = (InternalTopHits) aggregations.get(i);
                 shardDocs[i] = topHitsAgg.topDocs;
                 shardHits[i] = topHitsAgg.searchHits;
-                if (topDocs.scoreDocs.length == 0) {
-                    topDocs = topHitsAgg.topDocs;
-                }
             }
 
             try {
