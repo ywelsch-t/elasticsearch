@@ -27,6 +27,7 @@ import org.apache.lucene.search.join.BitDocIdSetFilter;
 import org.apache.lucene.util.BitSet;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BitDocIdSet;
+import org.apache.lucene.util.BytesRef;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -73,25 +74,19 @@ public class IncludeNestedDocsQuery extends Query {
     }
 
     @Override
-    public Weight createWeight(IndexSearcher searcher) throws IOException {
-        return new IncludeNestedDocsWeight(parentQuery, parentQuery.createWeight(searcher), parentFilter);
+    public Weight createWeight(IndexSearcher searcher, boolean needsScores) throws IOException {
+        return new IncludeNestedDocsWeight(parentQuery, parentQuery.createWeight(searcher, needsScores), parentFilter);
     }
 
     static class IncludeNestedDocsWeight extends Weight {
 
-        private final Query parentQuery;
         private final Weight parentWeight;
         private final BitDocIdSetFilter parentsFilter;
 
         IncludeNestedDocsWeight(Query parentQuery, Weight parentWeight, BitDocIdSetFilter parentsFilter) {
-            this.parentQuery = parentQuery;
+            super(parentQuery);
             this.parentWeight = parentWeight;
             this.parentsFilter = parentsFilter;
-        }
-
-        @Override
-        public Query getQuery() {
-            return parentQuery;
         }
 
         @Override
@@ -105,8 +100,8 @@ public class IncludeNestedDocsQuery extends Query {
         }
 
         @Override
-        public Scorer scorer(LeafReaderContext context, Bits acceptDocs, boolean needsScores) throws IOException {
-            final Scorer parentScorer = parentWeight.scorer(context, acceptDocs, needsScores);
+        public Scorer scorer(LeafReaderContext context, Bits acceptDocs) throws IOException {
+            final Scorer parentScorer = parentWeight.scorer(context, acceptDocs);
 
             // no matches
             if (parentScorer == null) {
@@ -241,6 +236,26 @@ public class IncludeNestedDocsQuery extends Query {
         @Override
         public long cost() {
             return parentScorer.cost();
+        }
+
+        @Override
+        public BytesRef getPayload() throws IOException {
+            return parentScorer.getPayload();
+        }
+
+        @Override
+        public int nextPosition() throws IOException {
+            return parentScorer.nextPosition();
+        }
+
+        @Override
+        public int startOffset() throws IOException {
+            return parentScorer.startOffset();
+        }
+
+        @Override
+        public int endOffset() throws IOException {
+            return parentScorer.endOffset();
         }
     }
 
