@@ -19,8 +19,8 @@
 
 package org.elasticsearch.action.termvectors;
 
-import org.apache.lucene.index.DocsAndPositionsEnum;
 import org.apache.lucene.index.Fields;
+import org.apache.lucene.index.PostingsEnum;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.util.BytesRef;
@@ -121,9 +121,9 @@ public class GetTermVectorsCheckDocFreqTests extends ElasticsearchIntegrationTes
                 assertThat("expected ttf of " + string, numDocs, equalTo((int) iterator.totalTermFreq()));
             }
 
-            DocsAndPositionsEnum docsAndPositions = iterator.docsAndPositions(null, null);
-            assertThat(docsAndPositions.nextDoc(), equalTo(0));
-            assertThat(freq[j], equalTo(docsAndPositions.freq()));
+            PostingsEnum postings = iterator.postings(null, null);
+            assertThat(postings.nextDoc(), equalTo(0));
+            assertThat(freq[j], equalTo(postings.freq()));
             assertThat(iterator.docFreq(), equalTo(numDocs));
             int[] termPos = pos[j];
             int[] termStartOffset = startOffset[j];
@@ -132,11 +132,11 @@ public class GetTermVectorsCheckDocFreqTests extends ElasticsearchIntegrationTes
             assertThat(termStartOffset.length, equalTo(freq[j]));
             assertThat(termEndOffset.length, equalTo(freq[j]));
             for (int k = 0; k < freq[j]; k++) {
-                int nextPosition = docsAndPositions.nextPosition();
+                int nextPosition = postings.nextPosition();
                 assertThat("term: " + string, nextPosition, equalTo(termPos[k]));
-                assertThat("term: " + string, docsAndPositions.startOffset(), equalTo(termStartOffset[k]));
-                assertThat("term: " + string, docsAndPositions.endOffset(), equalTo(termEndOffset[k]));
-                assertThat("term: " + string, docsAndPositions.getPayload(), equalTo(new BytesRef("word")));
+                assertThat("term: " + string, postings.startOffset(), equalTo(termStartOffset[k]));
+                assertThat("term: " + string, postings.endOffset(), equalTo(termEndOffset[k]));
+                assertThat("term: " + string, postings.getPayload(), equalTo(new BytesRef("word")));
             }
         }
         assertThat(iterator.next(), Matchers.nullValue());
@@ -178,9 +178,9 @@ public class GetTermVectorsCheckDocFreqTests extends ElasticsearchIntegrationTes
 
             assertThat("expected ttf of " + string, -1, equalTo((int) iterator.totalTermFreq()));
 
-            DocsAndPositionsEnum docsAndPositions = iterator.docsAndPositions(null, null);
-            assertThat(docsAndPositions.nextDoc(), equalTo(0));
-            assertThat(freq[j], equalTo(docsAndPositions.freq()));
+            PostingsEnum postings = iterator.postings(null, null);
+            assertThat(postings.nextDoc(), equalTo(0));
+            assertThat(freq[j], equalTo(postings.freq()));
             assertThat(iterator.docFreq(), equalTo(-1));
             int[] termPos = pos[j];
             int[] termStartOffset = startOffset[j];
@@ -189,11 +189,11 @@ public class GetTermVectorsCheckDocFreqTests extends ElasticsearchIntegrationTes
             assertThat(termStartOffset.length, equalTo(freq[j]));
             assertThat(termEndOffset.length, equalTo(freq[j]));
             for (int k = 0; k < freq[j]; k++) {
-                int nextPosition = docsAndPositions.nextPosition();
+                int nextPosition = postings.nextPosition();
                 assertThat("term: " + string, nextPosition, equalTo(termPos[k]));
-                assertThat("term: " + string, docsAndPositions.startOffset(), equalTo(termStartOffset[k]));
-                assertThat("term: " + string, docsAndPositions.endOffset(), equalTo(termEndOffset[k]));
-                assertThat("term: " + string, docsAndPositions.getPayload(), equalTo(new BytesRef("word")));
+                assertThat("term: " + string, postings.startOffset(), equalTo(termStartOffset[k]));
+                assertThat("term: " + string, postings.endOffset(), equalTo(termEndOffset[k]));
+                assertThat("term: " + string, postings.getPayload(), equalTo(new BytesRef("word")));
             }
         }
         assertThat(iterator.next(), Matchers.nullValue());
@@ -238,9 +238,9 @@ public class GetTermVectorsCheckDocFreqTests extends ElasticsearchIntegrationTes
                 assertThat("expected ttf of " + string, numDocs, equalTo((int) iterator.totalTermFreq()));
             }
 
-            DocsAndPositionsEnum docsAndPositions = iterator.docsAndPositions(null, null);
-            assertThat(docsAndPositions.nextDoc(), equalTo(0));
-            assertThat(freq[j], equalTo(docsAndPositions.freq()));
+            PostingsEnum postings = iterator.postings(null, null);
+            assertThat(postings.nextDoc(), equalTo(0));
+            assertThat(freq[j], equalTo(postings.freq()));
             assertThat(iterator.docFreq(), equalTo(numDocs));
             int[] termPos = pos[j];
             int[] termStartOffset = startOffset[j];
@@ -249,11 +249,11 @@ public class GetTermVectorsCheckDocFreqTests extends ElasticsearchIntegrationTes
             assertThat(termStartOffset.length, equalTo(freq[j]));
             assertThat(termEndOffset.length, equalTo(freq[j]));
             for (int k = 0; k < freq[j]; k++) {
-                int nextPosition = docsAndPositions.nextPosition();
+                int nextPosition = postings.nextPosition();
                 assertThat("term: " + string, nextPosition, equalTo(termPos[k]));
-                assertThat("term: " + string, docsAndPositions.startOffset(), equalTo(termStartOffset[k]));
-                assertThat("term: " + string, docsAndPositions.endOffset(), equalTo(termEndOffset[k]));
-                assertThat("term: " + string, docsAndPositions.getPayload(), equalTo(new BytesRef("word")));
+                assertThat("term: " + string, postings.startOffset(), equalTo(termStartOffset[k]));
+                assertThat("term: " + string, postings.endOffset(), equalTo(termEndOffset[k]));
+                assertThat("term: " + string, postings.getPayload(), equalTo(new BytesRef("word")));
             }
         }
         assertThat(iterator.next(), Matchers.nullValue());

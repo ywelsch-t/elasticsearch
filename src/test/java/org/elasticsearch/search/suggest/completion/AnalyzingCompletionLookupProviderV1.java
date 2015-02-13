@@ -24,8 +24,8 @@ import com.carrotsearch.hppc.ObjectLongOpenHashMap;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.codecs.CodecUtil;
 import org.apache.lucene.codecs.FieldsConsumer;
-import org.apache.lucene.index.DocsAndPositionsEnum;
 import org.apache.lucene.index.Fields;
+import org.apache.lucene.index.PostingsEnum;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.DocIdSetIterator;
@@ -141,7 +141,7 @@ public class AnalyzingCompletionLookupProviderV1 extends CompletionLookupProvide
                         continue;
                     }
                     TermsEnum termsEnum = terms.iterator(null);
-                    DocsAndPositionsEnum docsEnum = null;
+                    PostingsEnum postings = null;
                     final SuggestPayload spare = new SuggestPayload();
                     int maxAnalyzedPathsForOneInput = 0;
                     final XAnalyzingSuggester.XBuilder builder = new XAnalyzingSuggester.XBuilder(maxSurfaceFormsPerAnalyzedForm, hasPayloads, XAnalyzingSuggester.PAYLOAD_SEP);
@@ -151,19 +151,19 @@ public class AnalyzingCompletionLookupProviderV1 extends CompletionLookupProvide
                         if (term == null) {
                             break;
                         }
-                        docsEnum = termsEnum.docsAndPositions(null, docsEnum, DocsAndPositionsEnum.FLAG_PAYLOADS);
+                        postings = termsEnum.postings(null, postings, PostingsEnum.FLAG_PAYLOADS);
                         builder.startTerm(term);
                         int docFreq = 0;
-                        while (docsEnum.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
-                            for (int i = 0; i < docsEnum.freq(); i++) {
-                                final int position = docsEnum.nextPosition();
-                                AnalyzingCompletionLookupProviderV1.this.parsePayload(docsEnum.getPayload(), spare);
+                        while (postings.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
+                            for (int i = 0; i < postings.freq(); i++) {
+                                final int position = postings.nextPosition();
+                                AnalyzingCompletionLookupProviderV1.this.parsePayload(postings.getPayload(), spare);
                                 builder.addSurface(spare.surfaceForm.get(), spare.payload.get(), spare.weight);
                                 // multi fields have the same surface form so we sum up here
                                 maxAnalyzedPathsForOneInput = Math.max(maxAnalyzedPathsForOneInput, position + 1);
                             }
                             docFreq++;
-                            docCount = Math.max(docCount, docsEnum.docID() + 1);
+                            docCount = Math.max(docCount, postings.docID() + 1);
                         }
                         builder.finishTerm(docFreq);
                     }
