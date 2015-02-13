@@ -118,13 +118,14 @@ public class ContextIndexSearcher extends IndexSearcher implements Releasable {
     }
 
     @Override
-    public Weight createNormalizedWeight(Query query) throws IOException {
+    public Weight createNormalizedWeight(Query query, boolean needsScores) throws IOException {
+        // nocommit: when we dont need scores, we should not do any DFS stuff????
         try {
             // if its the main query, use we have dfs data, only then do it
             if (dfSource != null && (query == searchContext.query() || query == searchContext.parsedQuery().query())) {
-                return dfSource.createNormalizedWeight(query);
+                return dfSource.createNormalizedWeight(query, needsScores);
             }
-            return in.createNormalizedWeight(query);
+            return in.createNormalizedWeight(query, needsScores);
         } catch (Throwable t) {
             searchContext.clearReleasables(Lifetime.COLLECTION);
             throw new RuntimeException(t);

@@ -20,9 +20,10 @@
 package org.elasticsearch.index.query;
 
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilterCachingPolicy;
+import org.apache.lucene.search.QueryWrapperFilter;
+import org.apache.lucene.search.TermQuery;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.lucene.BytesRefs;
 import org.elasticsearch.common.lucene.HashedBytesRef;
@@ -112,7 +113,7 @@ public class TermFilterParser implements FilterParser {
             filter = smartNameFieldMappers.mapper().termFilter(value, parseContext);
         }
         if (filter == null) {
-            filter = new TermFilter(new Term(fieldName, BytesRefs.toBytesRef(value)));
+            filter = new QueryWrapperFilter(new TermQuery(new Term(fieldName, BytesRefs.toBytesRef(value))));
         }
 
         if (cache != null) {

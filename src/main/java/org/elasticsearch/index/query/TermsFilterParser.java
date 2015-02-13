@@ -22,11 +22,12 @@ package org.elasticsearch.index.query;
 import com.google.common.collect.Lists;
 
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.queries.TermsFilter;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilterCachingPolicy;
+import org.apache.lucene.search.QueryWrapperFilter;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
@@ -213,7 +214,7 @@ public class TermsFilterParser implements FilterParser {
                     }
                 } else {
                     for (Object term : terms) {
-                        boolFiler.add(parseContext.cacheFilter(new TermFilter(new Term(fieldName, BytesRefs.toBytesRef(term))), null, parseContext.autoFilterCachePolicy()), BooleanClause.Occur.SHOULD);
+                        boolFiler.add(parseContext.cacheFilter(new QueryWrapperFilter(new TermQuery(new Term(fieldName, BytesRefs.toBytesRef(term)))), null, parseContext.autoFilterCachePolicy()), BooleanClause.Occur.SHOULD);
                     }
                 }
                 filter = boolFiler;
@@ -225,7 +226,7 @@ public class TermsFilterParser implements FilterParser {
                     }
                 } else {
                     for (Object term : terms) {
-                        boolFiler.add(new TermFilter(new Term(fieldName, BytesRefs.toBytesRef(term))), BooleanClause.Occur.SHOULD);
+                        boolFiler.add(new QueryWrapperFilter(new TermQuery(new Term(fieldName, BytesRefs.toBytesRef(term)))), BooleanClause.Occur.SHOULD);
                     }
                 }
                 filter = boolFiler;
@@ -237,7 +238,7 @@ public class TermsFilterParser implements FilterParser {
                     }
                 } else {
                     for (Object term : terms) {
-                        filters.add(parseContext.cacheFilter(new TermFilter(new Term(fieldName, BytesRefs.toBytesRef(term))), null, parseContext.autoFilterCachePolicy()));
+                        filters.add(parseContext.cacheFilter(new QueryWrapperFilter(new TermQuery(new Term(fieldName, BytesRefs.toBytesRef(term)))), null, parseContext.autoFilterCachePolicy()));
                     }
                 }
                 filter = new AndFilter(filters);
@@ -249,7 +250,7 @@ public class TermsFilterParser implements FilterParser {
                     }
                 } else {
                     for (Object term : terms) {
-                        filters.add(new TermFilter(new Term(fieldName, BytesRefs.toBytesRef(term))));
+                        filters.add(new QueryWrapperFilter(new TermQuery(new Term(fieldName, BytesRefs.toBytesRef(term)))));
                     }
                 }
                 filter = new AndFilter(filters);
@@ -261,7 +262,7 @@ public class TermsFilterParser implements FilterParser {
                     }
                 } else {
                     for (Object term : terms) {
-                        filters.add(parseContext.cacheFilter(new TermFilter(new Term(fieldName, BytesRefs.toBytesRef(term))), null, parseContext.autoFilterCachePolicy()));
+                        filters.add(parseContext.cacheFilter(new QueryWrapperFilter(new TermQuery(new Term(fieldName, BytesRefs.toBytesRef(term)))), null, parseContext.autoFilterCachePolicy()));
                     }
                 }
                 filter = new OrFilter(filters);
@@ -273,7 +274,7 @@ public class TermsFilterParser implements FilterParser {
                     }
                 } else {
                     for (Object term : terms) {
-                        filters.add(new TermFilter(new Term(fieldName, BytesRefs.toBytesRef(term))));
+                        filters.add(new QueryWrapperFilter(new TermQuery(new Term(fieldName, BytesRefs.toBytesRef(term)))));
                     }
                 }
                 filter = new OrFilter(filters);

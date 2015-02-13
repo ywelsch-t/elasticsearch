@@ -22,8 +22,9 @@ package org.elasticsearch.index.mapper.core;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.index.IndexOptions;
-import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.QueryWrapperFilter;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.ElasticsearchIllegalArgumentException;
 import org.elasticsearch.common.Booleans;
@@ -203,7 +204,7 @@ public class BooleanFieldMapper extends AbstractFieldMapper<Boolean> {
         if (nullValue == null) {
             return null;
         }
-        return new TermFilter(names().createIndexNameTerm(nullValue ? Values.TRUE : Values.FALSE));
+        return new QueryWrapperFilter(new TermQuery(names().createIndexNameTerm(nullValue ? Values.TRUE : Values.FALSE)));
     }
 
     @Override

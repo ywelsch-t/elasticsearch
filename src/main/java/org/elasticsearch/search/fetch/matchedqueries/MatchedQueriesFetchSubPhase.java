@@ -20,11 +20,13 @@ package org.elasticsearch.search.fetch.matchedqueries;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.QueryWrapperFilter;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.Bits;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.ExceptionsHelper;
@@ -74,7 +76,7 @@ public class MatchedQueriesFetchSubPhase implements FetchSubPhase {
             DocIdSet docAndNestedDocsIdSet = null;
             if (context.mapperService().documentMapper(hitContext.hit().type()).hasNestedObjects()) {
                 // Both main and nested Lucene docs have a _uid field
-                Filter docAndNestedDocsFilter = new TermFilter(new Term(UidFieldMapper.NAME, Uid.createUidAsBytes(hitContext.hit().type(), hitContext.hit().id())));
+                Filter docAndNestedDocsFilter = new QueryWrapperFilter(new TermQuery(new Term(UidFieldMapper.NAME, Uid.createUidAsBytes(hitContext.hit().type(), hitContext.hit().id()))));
                 docAndNestedDocsIdSet = docAndNestedDocsFilter.getDocIdSet(hitContext.readerContext(), null);
             }
             addMatchedQueries(hitContext, context.parsedQuery().namedFilters(), matchedQueries, docAndNestedDocsIdSet);
