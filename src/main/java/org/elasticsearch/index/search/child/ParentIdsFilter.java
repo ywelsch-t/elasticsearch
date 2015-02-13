@@ -18,16 +18,17 @@
  */
 package org.elasticsearch.index.search.child;
 
-import org.apache.lucene.index.DocsEnum;
 import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.index.PostingsEnum;
 import org.apache.lucene.index.SortedDocValues;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.QueryWrapperFilter;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.join.BitDocIdSetFilter;
 import org.apache.lucene.util.BitDocIdSet;
 import org.apache.lucene.util.BitSet;
@@ -64,12 +65,12 @@ final class ParentIdsFilter extends Filter {
             BytesRef id = globalValues.lookupOrd((int) parentOrds.nextSetBit(0));
             if (nonNestedDocsFilter != null) {
                 List<Filter> filters = Arrays.asList(
-                        new TermFilter(new Term(UidFieldMapper.NAME, Uid.createUidAsBytes(parentType, id))),
+                        new QueryWrapperFilter(new TermQuery(new Term(UidFieldMapper.NAME, Uid.createUidAsBytes(parentType, id)))),
                         nonNestedDocsFilter
                 );
                 return new AndFilter(filters);
             } else {
-                return new TermFilter(new Term(UidFieldMapper.NAME, Uid.createUidAsBytes(parentType, id)));
+                return new QueryWrapperFilter(new TermQuery(new Term(UidFieldMapper.NAME, Uid.createUidAsBytes(parentType, id))));
             }
         } else {
             BytesRefHash parentIds= null;
@@ -97,12 +98,12 @@ final class ParentIdsFilter extends Filter {
             BytesRef id = globalValues.lookupOrd((int) parentIdxs.get(0));
             if (nonNestedDocsFilter != null) {
                 List<Filter> filters = Arrays.asList(
-                        new TermFilter(new Term(UidFieldMapper.NAME, Uid.createUidAsBytes(parentType, id))),
+                        new QueryWrapperFilter(new TermQuery(new Term(UidFieldMapper.NAME, Uid.createUidAsBytes(parentType, id)))),
                         nonNestedDocsFilter
                 );
                 return new AndFilter(filters);
             } else {
-                return new TermFilter(new Term(UidFieldMapper.NAME, Uid.createUidAsBytes(parentType, id)));
+                return new QueryWrapperFilter(new TermQuery(new Term(UidFieldMapper.NAME, Uid.createUidAsBytes(parentType, id))));
             }
         } else {
             BytesRefHash parentIds = null;
@@ -153,7 +154,7 @@ final class ParentIdsFilter extends Filter {
             nonNestedDocs = nonNestedDocsFilter.getDocIdSet(context).bits();
         }
 
-        DocsEnum docsEnum = null;
+        PostingsEnum docsEnum = null;
         BitSet result = null;
         int size = (int) parentIds.size();
         for (int i = 0; i < size; i++) {
@@ -161,7 +162,7 @@ final class ParentIdsFilter extends Filter {
             BytesRef uid = Uid.createUidAsBytes(parentTypeBr, idSpare, uidSpare);
             if (termsEnum.seekExact(uid)) {
                 int docId;
-                docsEnum = termsEnum.docs(acceptDocs, docsEnum, DocsEnum.FLAG_NONE);
+                docsEnum = termsEnum.postings(acceptDocs, docsEnum, PostingsEnum.FLAG_NONE);
                 if (result == null) {
                     docId = docsEnum.nextDoc();
                     if (docId != DocIdSetIterator.NO_MORE_DOCS) {
