@@ -23,15 +23,17 @@ import com.carrotsearch.hppc.ObjectOpenHashSet;
 import com.google.common.base.Charsets;
 import com.google.common.base.Predicate;
 import com.google.common.collect.*;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.DelegatingAnalyzerWrapper;
 import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.FilterClause;
-import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.queries.TermsFilter;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.QueryWrapperFilter;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.ElasticsearchGenerationException;
 import org.elasticsearch.ElasticsearchIllegalArgumentException;
@@ -503,7 +505,7 @@ public class MapperService extends AbstractIndexComponent  {
         // since they have different types (starting with __)
         if (types.length == 1) {
             DocumentMapper docMapper = documentMapper(types[0]);
-            Filter filter = docMapper != null ? docMapper.typeFilter() : new TermFilter(new Term(types[0]));
+            Filter filter = docMapper != null ? docMapper.typeFilter() : new QueryWrapperFilter(new TermQuery(new Term(types[0])));
             if (hasNested) {
                 return new AndFilter(ImmutableList.of(filter, NonNestedDocsFilter.INSTANCE));
             } else {
@@ -542,7 +544,7 @@ public class MapperService extends AbstractIndexComponent  {
             for (String type : types) {
                 DocumentMapper docMapper = documentMapper(type);
                 if (docMapper == null) {
-                    bool.add(new FilterClause(new TermFilter(new Term(TypeFieldMapper.NAME, type)), BooleanClause.Occur.SHOULD));
+                    bool.add(new FilterClause(new QueryWrapperFilter(new TermQuery(new Term(TypeFieldMapper.NAME, type))), BooleanClause.Occur.SHOULD));
                 } else {
                     bool.add(new FilterClause(docMapper.typeFilter(), BooleanClause.Occur.SHOULD));
                 }

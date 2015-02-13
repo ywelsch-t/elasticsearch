@@ -24,7 +24,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.*;
-import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.queries.TermsFilter;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
@@ -58,15 +57,15 @@ public class TermsFilterTests extends ElasticsearchTestCase {
         LeafReader reader = SlowCompositeReaderWrapper.wrap(DirectoryReader.open(w, true));
         w.close();
 
-        TermFilter tf = new TermFilter(new Term(fieldName, "19"));
+        Filter tf = new QueryWrapperFilter(new TermQuery(new Term(fieldName, "19")));
         assertNull(tf.getDocIdSet(reader.getContext(), reader.getLiveDocs()));
 
-        tf = new TermFilter(new Term(fieldName, "20"));
+        tf = new QueryWrapperFilter(new TermQuery(new Term(fieldName, "20")));
         DocIdSet result = tf.getDocIdSet(reader.getContext(), reader.getLiveDocs());
         BitSet bits = DocIdSets.toBitSet(result.iterator(), reader.maxDoc());
         assertThat(bits.cardinality(), equalTo(1));
 
-        tf = new TermFilter(new Term("all", "xxx"));
+        tf = new QueryWrapperFilter(new TermQuery(new Term("all", "xxx")));
         result = tf.getDocIdSet(reader.getContext(), reader.getLiveDocs());
         bits = DocIdSets.toBitSet(result.iterator(), reader.maxDoc());
         assertThat(bits.cardinality(), equalTo(100));

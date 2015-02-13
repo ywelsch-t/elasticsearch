@@ -26,7 +26,6 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.*;
 import org.apache.lucene.queries.FilterClause;
-import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Bits;
@@ -431,7 +430,7 @@ public class XBooleanFilterTests extends ElasticsearchLuceneTestCase {
             filter = new PrettyPrintFieldCacheTermsFilter(String.valueOf(field), String.valueOf(character));
         } else {
             Term term = new Term(String.valueOf(field), String.valueOf(character));
-            filter = new TermFilter(term);
+            filter = new QueryWrapperFilter(new TermQuery(term));
         }
         return new FilterClause(filter, occur);
     }

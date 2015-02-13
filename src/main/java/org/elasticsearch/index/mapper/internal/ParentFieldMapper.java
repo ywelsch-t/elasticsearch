@@ -19,15 +19,17 @@
 package org.elasticsearch.index.mapper.internal;
 
 import com.google.common.base.Objects;
+
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.queries.TermsFilter;
 import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.QueryWrapperFilter;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.common.Nullable;
 import org.elasticsearch.common.Strings;
@@ -278,7 +280,7 @@ public class ParentFieldMapper extends AbstractFieldMapper<Uid> implements Inter
         }
         BytesRef bValue = BytesRefs.toBytesRef(value);
         if (Uid.hasDelimiter(bValue)) {
-            return new TermFilter(new Term(names.indexName(), bValue));
+            return new QueryWrapperFilter(new TermQuery(new Term(names.indexName(), bValue)));
         }
 
         List<String> types = new ArrayList<>(context.mapperService().types().size());
@@ -291,7 +293,7 @@ public class ParentFieldMapper extends AbstractFieldMapper<Uid> implements Inter
         if (types.isEmpty()) {
             return Queries.MATCH_NO_FILTER;
         } else if (types.size() == 1) {
-            return new TermFilter(new Term(names.indexName(), Uid.createUidAsBytes(types.get(0), bValue)));
+            return new QueryWrapperFilter(new TermQuery(new Term(names.indexName(), Uid.createUidAsBytes(types.get(0), bValue))));
         } else {
             // we use all non child types, cause we don't know if its exact or not...
             List<BytesRef> typesValues = new ArrayList<>(types.size());

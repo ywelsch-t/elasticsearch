@@ -23,7 +23,6 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.BlendedTermQuery;
 import org.apache.lucene.queries.FilterClause;
-import org.apache.lucene.queries.TermFilter;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.Filter;
@@ -77,12 +76,7 @@ public class CustomFieldQuery extends FieldQuery {
         if (sourceQuery instanceof SpanTermQuery) {
             super.flatten(new TermQuery(((SpanTermQuery) sourceQuery).getTerm()), reader, flatQueries);
         } else if (sourceQuery instanceof ConstantScoreQuery) {
-            ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) sourceQuery;
-            if (constantScoreQuery.getFilter() != null) {
-                flatten(constantScoreQuery.getFilter(), reader, flatQueries);
-            } else {
-                flatten(constantScoreQuery.getQuery(), reader, flatQueries);
-            }
+            flatten(((ConstantScoreQuery) sourceQuery).getQuery(), reader, flatQueries);
         } else if (sourceQuery instanceof FunctionScoreQuery) {
             flatten(((FunctionScoreQuery) sourceQuery).getSubQuery(), reader, flatQueries);
         } else if (sourceQuery instanceof FilteredQuery) {
@@ -145,9 +139,7 @@ public class CustomFieldQuery extends FieldQuery {
         if (highlight == null || highlight.equals(Boolean.FALSE)) {
             return;
         }
-        if (sourceFilter instanceof TermFilter) {
-            flatten(new TermQuery(((TermFilter) sourceFilter).getTerm()), reader, flatQueries);
-        } else if (sourceFilter instanceof MultiTermQueryWrapperFilter) {
+        if (sourceFilter instanceof MultiTermQueryWrapperFilter) {
             if (multiTermQueryWrapperFilterQueryField != null) {
                 try {
                     flatten((Query) multiTermQueryWrapperFilterQueryField.get(sourceFilter), reader, flatQueries);

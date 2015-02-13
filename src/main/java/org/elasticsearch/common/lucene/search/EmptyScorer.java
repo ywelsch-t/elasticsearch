@@ -20,6 +20,7 @@ package org.elasticsearch.common.lucene.search;
 
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Weight;
+import org.apache.lucene.util.BytesRef;
 
 import java.io.IOException;
 
@@ -41,6 +42,26 @@ public class EmptyScorer extends Scorer {
 
     @Override
     public int freq() throws IOException {
+        throw new UnsupportedOperationException("Should never be called");
+    }
+
+    @Override
+    public int endOffset() throws IOException {
+        throw new UnsupportedOperationException("Should never be called");
+    }
+
+    @Override
+    public BytesRef getPayload() throws IOException {
+        throw new UnsupportedOperationException("Should never be called");
+    }
+
+    @Override
+    public int nextPosition() throws IOException {
+        throw new UnsupportedOperationException("Should never be called");
+    }
+
+    @Override
+    public int startOffset() throws IOException {
         throw new UnsupportedOperationException("Should never be called");
     }
 
