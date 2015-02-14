@@ -44,6 +44,7 @@ import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.TestUtil;
 import org.elasticsearch.common.lucene.search.AndFilter;
 import org.elasticsearch.common.lucene.search.NotFilter;
+import org.elasticsearch.common.lucene.search.Queries;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.index.fielddata.AbstractFieldDataTests;
 import org.elasticsearch.index.fielddata.FieldDataType;
@@ -117,8 +118,8 @@ public class NestedSortingTests extends AbstractFieldDataTests {
     }
 
     private TopDocs getTopDocs(IndexSearcher searcher, IndexFieldData<?> indexFieldData, String missingValue, MultiValueMode sortMode, int n, boolean reverse) throws IOException {
-        Filter parentFilter = new QueryWrapperFilter(new TermQuery(new Term("__type", "parent")));
-        Filter childFilter = new QueryWrapperFilter(new TermQuery(new Term("__type", "child")));
+        Filter parentFilter = Queries.wrap(new TermQuery(new Term("__type", "parent")));
+        Filter childFilter = Queries.wrap(new TermQuery(new Term("__type", "child")));
         XFieldComparatorSource nestedComparatorSource = indexFieldData.comparatorSource(missingValue, sortMode, createNested(parentFilter, childFilter));
         Query query = new ConstantScoreQuery(parentFilter);
         Sort sort = new Sort(new SortField("f", nestedComparatorSource, reverse));
@@ -283,7 +284,7 @@ public class NestedSortingTests extends AbstractFieldDataTests {
         MultiValueMode sortMode = MultiValueMode.MIN;
         IndexSearcher searcher = new IndexSearcher(DirectoryReader.open(writer, false));
         PagedBytesIndexFieldData indexFieldData = getForField("field2");
-        Filter parentFilter = new QueryWrapperFilter(new TermQuery(new Term("__type", "parent")));
+        Filter parentFilter = Queries.wrap(new TermQuery(new Term("__type", "parent")));
         Filter childFilter = new NotFilter(parentFilter);
         BytesRefFieldComparatorSource nestedComparatorSource = new BytesRefFieldComparatorSource(indexFieldData, null, sortMode, createNested(parentFilter, childFilter));
         ToParentBlockJoinQuery query = new ToParentBlockJoinQuery(new FilteredQuery(new MatchAllDocsQuery(), childFilter), new BitDocIdSetCachingWrapperFilter(parentFilter), ScoreMode.None);
@@ -321,7 +322,7 @@ public class NestedSortingTests extends AbstractFieldDataTests {
         assertThat(((BytesRef) ((FieldDoc) topDocs.scoreDocs[4]).fields[0]).utf8ToString(), equalTo("g"));
 
 
-        childFilter = new AndFilter(Arrays.asList(new NotFilter(parentFilter), new QueryWrapperFilter(new TermQuery(new Term("filter_1", "T")))));
+        childFilter = new AndFilter(Arrays.asList(new NotFilter(parentFilter), Queries.wrap(new TermQuery(new Term("filter_1", "T")))));
         nestedComparatorSource = new BytesRefFieldComparatorSource(indexFieldData, null, sortMode, createNested(parentFilter, childFilter));
         query = new ToParentBlockJoinQuery(
                 new FilteredQuery(new MatchAllDocsQuery(), childFilter),

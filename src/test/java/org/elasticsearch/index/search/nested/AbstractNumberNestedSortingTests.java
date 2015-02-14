@@ -40,6 +40,7 @@ import org.apache.lucene.search.join.BitDocIdSetCachingWrapperFilter;
 import org.apache.lucene.search.join.ScoreMode;
 import org.apache.lucene.search.join.ToParentBlockJoinQuery;
 import org.elasticsearch.common.lucene.search.NotFilter;
+import org.elasticsearch.common.lucene.search.Queries;
 import org.elasticsearch.index.fielddata.AbstractFieldDataTests;
 import org.elasticsearch.index.fielddata.IndexFieldData;
 import org.elasticsearch.index.fielddata.IndexFieldData.XFieldComparatorSource;
@@ -217,7 +218,7 @@ public abstract class AbstractNumberNestedSortingTests extends AbstractFieldData
 
         MultiValueMode sortMode = MultiValueMode.SUM;
         IndexSearcher searcher = new IndexSearcher(DirectoryReader.open(writer, false));
-        Filter parentFilter = new QueryWrapperFilter(new TermQuery(new Term("__type", "parent")));
+        Filter parentFilter = Queries.wrap(new TermQuery(new Term("__type", "parent")));
         Filter childFilter = new NotFilter(parentFilter);
         XFieldComparatorSource nestedComparatorSource = createFieldComparator("field2", sortMode, null, createNested(parentFilter, childFilter));
         ToParentBlockJoinQuery query = new ToParentBlockJoinQuery(new FilteredQuery(new MatchAllDocsQuery(), childFilter), new BitDocIdSetCachingWrapperFilter(parentFilter), ScoreMode.None);
@@ -252,7 +253,7 @@ public abstract class AbstractNumberNestedSortingTests extends AbstractFieldData
         assertThat(topDocs.scoreDocs[4].doc, equalTo(3));
         assertThat(((Number) ((FieldDoc) topDocs.scoreDocs[4]).fields[0]).intValue(), equalTo(9));
 
-        childFilter = new QueryWrapperFilter(new TermQuery(new Term("filter_1", "T")));
+        childFilter = Queries.wrap(new TermQuery(new Term("filter_1", "T")));
         nestedComparatorSource = createFieldComparator("field2", sortMode, null, createNested(parentFilter, childFilter));
         query = new ToParentBlockJoinQuery(
                 new FilteredQuery(new MatchAllDocsQuery(), childFilter),

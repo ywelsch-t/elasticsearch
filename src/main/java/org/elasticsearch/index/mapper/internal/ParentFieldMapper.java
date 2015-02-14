@@ -280,7 +280,7 @@ public class ParentFieldMapper extends AbstractFieldMapper<Uid> implements Inter
         }
         BytesRef bValue = BytesRefs.toBytesRef(value);
         if (Uid.hasDelimiter(bValue)) {
-            return new QueryWrapperFilter(new TermQuery(new Term(names.indexName(), bValue)));
+            return Queries.wrap(new TermQuery(new Term(names.indexName(), bValue)), context);
         }
 
         List<String> types = new ArrayList<>(context.mapperService().types().size());
@@ -293,7 +293,7 @@ public class ParentFieldMapper extends AbstractFieldMapper<Uid> implements Inter
         if (types.isEmpty()) {
             return Queries.MATCH_NO_FILTER;
         } else if (types.size() == 1) {
-            return new QueryWrapperFilter(new TermQuery(new Term(names.indexName(), Uid.createUidAsBytes(types.get(0), bValue))));
+            return Queries.wrap(new TermQuery(new Term(names.indexName(), Uid.createUidAsBytes(types.get(0), bValue))), context);
         } else {
             // we use all non child types, cause we don't know if its exact or not...
             List<BytesRef> typesValues = new ArrayList<>(types.size());

@@ -73,11 +73,11 @@ public class Queries {
         return q;
     }
 
-    // nocommit: check what is using this
+    // TODO: nuke MatchAllDocsFilter
     public static boolean isConstantMatchAllQuery(Query query) {
         if (query instanceof ConstantScoreQuery) {
             ConstantScoreQuery scoreQuery = (ConstantScoreQuery) query;
-            if (scoreQuery.getQuery() instanceof MatchAllDocsQuery) {
+            if (scoreQuery.getQuery() instanceof MatchAllDocsQuery || scoreQuery.getQuery() instanceof MatchAllDocsFilter) {
                 return true;
             }
         }
@@ -152,6 +152,16 @@ public class Queries {
     public static Filter wrap(Query query, QueryParseContext context) {
         return FACTORY.wrap(query, context);
     }
+    
+    /**
+     * Wraps a query in a filter.
+     *
+     * If a filter has an anti per segment execution / caching nature then @{@link CustomQueryWrappingFilter} is returned
+     * otherwise the standard {@link org.apache.lucene.search.QueryWrapperFilter} is returned.
+     */
+    public static Filter wrap(Query query) {
+        return FACTORY.wrap(query, null);
+    }
 
     private static final QueryWrapperFilterFactory FACTORY = new QueryWrapperFilterFactory();
     // NOTE: This is a separate class since we added QueryWrapperFilter as a forbidden API
@@ -160,7 +170,8 @@ public class Queries {
     private static final class QueryWrapperFilterFactory {
 
         public Filter wrap(Query query, QueryParseContext context) {
-            if (context.requireCustomQueryWrappingFilter() || CustomQueryWrappingFilter.shouldUseCustomQueryWrappingFilter(query)) {
+            if ((context != null && context.requireCustomQueryWrappingFilter())
+                    || CustomQueryWrappingFilter.shouldUseCustomQueryWrappingFilter(query)) {
                 return new CustomQueryWrappingFilter(query);
             } else {
                 return new QueryWrapperFilter(query);

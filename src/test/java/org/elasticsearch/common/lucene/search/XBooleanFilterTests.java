@@ -430,7 +430,7 @@ public class XBooleanFilterTests extends ElasticsearchLuceneTestCase {
             filter = new PrettyPrintFieldCacheTermsFilter(String.valueOf(field), String.valueOf(character));
         } else {
             Term term = new Term(String.valueOf(field), String.valueOf(character));
-            filter = new QueryWrapperFilter(new TermQuery(term));
+            filter = Queries.wrap(new TermQuery(term));
         }
         return new FilterClause(filter, occur);
     }
@@ -509,7 +509,7 @@ public class XBooleanFilterTests extends ElasticsearchLuceneTestCase {
             FixedBitSet leftResult = new FixedBitSet(reader.maxDoc());
             FixedBitSet rightResult = new FixedBitSet(reader.maxDoc());
             DocIdSet left = booleanFilter.getDocIdSet(reader.getContext(), reader.getLiveDocs());
-            DocIdSet right = new QueryWrapperFilter(topLevel).getDocIdSet(reader.getContext(), reader.getLiveDocs());
+            DocIdSet right = Queries.wrap(topLevel).getDocIdSet(reader.getContext(), reader.getLiveDocs());
             if (left == null || right == null) {
                 if (left == null && right != null) {
                     assertThat(errorMsg(clauses, topLevel), (right.iterator() == null ? DocIdSetIterator.NO_MORE_DOCS : right.iterator().nextDoc()), equalTo(DocIdSetIterator.NO_MORE_DOCS));

@@ -29,6 +29,7 @@ import org.apache.lucene.util.CloseableThreadLocal;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.common.inject.Inject;
+import org.elasticsearch.common.lucene.search.Queries;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.util.concurrent.ConcurrentCollections;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -281,7 +282,7 @@ public class PercolatorQueriesRegistry extends AbstractIndexShardComponent imple
             try (Engine.Searcher searcher = shard.acquireSearcher("percolator_load_queries", true)) {
                 Query query = new ConstantScoreQuery(
                         indexCache.filter().cache(
-                                new QueryWrapperFilter(new TermQuery(new Term(TypeFieldMapper.NAME, PercolatorService.TYPE_NAME))),
+                                Queries.wrap(new TermQuery(new Term(TypeFieldMapper.NAME, PercolatorService.TYPE_NAME))),
                                 null,
                                 queryParserService.autoFilterCachePolicy()
                         )

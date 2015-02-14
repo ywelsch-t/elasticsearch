@@ -34,6 +34,7 @@ import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.common.Nullable;
 import org.elasticsearch.common.lucene.BytesRefs;
 import org.elasticsearch.common.lucene.Lucene;
+import org.elasticsearch.common.lucene.search.Queries;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -152,7 +153,7 @@ public class TypeFieldMapper extends AbstractFieldMapper<String> implements Inte
         if (fieldType.indexOptions() == IndexOptions.NONE) {
             return new PrefixFilter(new Term(UidFieldMapper.NAME, Uid.typePrefixAsBytes(BytesRefs.toBytesRef(value))));
         }
-        return new QueryWrapperFilter(new TermQuery(names().createIndexNameTerm(BytesRefs.toBytesRef(value))));
+        return Queries.wrap(new TermQuery(names().createIndexNameTerm(BytesRefs.toBytesRef(value))), context);
     }
 
     @Override

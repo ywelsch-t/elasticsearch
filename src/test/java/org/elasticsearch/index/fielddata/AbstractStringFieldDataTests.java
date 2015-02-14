@@ -49,6 +49,7 @@ import org.apache.lucene.util.FixedBitSet;
 import org.apache.lucene.util.TestUtil;
 import org.apache.lucene.util.UnicodeUtil;
 import org.elasticsearch.common.lucene.search.NotFilter;
+import org.elasticsearch.common.lucene.search.Queries;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.index.fielddata.IndexFieldData.XFieldComparatorSource;
 import org.elasticsearch.index.fielddata.IndexFieldData.XFieldComparatorSource.Nested;
@@ -399,7 +400,7 @@ public abstract class AbstractStringFieldDataTests extends AbstractFieldDataImpl
             missingValue = new BytesRef(TestUtil.randomSimpleString(getRandom()));
             break;
         }
-        Filter parentFilter = new QueryWrapperFilter(new TermQuery(new Term("type", "parent")));
+        Filter parentFilter = Queries.wrap(new TermQuery(new Term("type", "parent")));
         Filter childFilter = new NotFilter(parentFilter);
         Nested nested = createNested(parentFilter, childFilter);
         BytesRefFieldComparatorSource nestedComparatorSource = new BytesRefFieldComparatorSource(fieldData, missingValue, sortMode, nested);

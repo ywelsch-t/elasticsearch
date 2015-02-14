@@ -40,6 +40,7 @@ import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.lucene.BytesRefs;
 import org.elasticsearch.common.lucene.Lucene;
 import org.elasticsearch.common.lucene.search.MatchNoDocsFilter;
+import org.elasticsearch.common.lucene.search.Queries;
 import org.elasticsearch.common.lucene.search.RegexpFilter;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
@@ -492,7 +493,7 @@ public abstract class AbstractFieldMapper<T> implements FieldMapper<T> {
 
     @Override
     public Filter termFilter(Object value, @Nullable QueryParseContext context) {
-        return new QueryWrapperFilter(new TermQuery(names().createIndexNameTerm(indexedValueForSearch(value))));
+        return Queries.wrap(new TermQuery(names().createIndexNameTerm(indexedValueForSearch(value))), context);
     }
 
     @Override

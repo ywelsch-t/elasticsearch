@@ -57,15 +57,15 @@ public class TermsFilterTests extends ElasticsearchTestCase {
         LeafReader reader = SlowCompositeReaderWrapper.wrap(DirectoryReader.open(w, true));
         w.close();
 
-        Filter tf = new QueryWrapperFilter(new TermQuery(new Term(fieldName, "19")));
+        Filter tf = Queries.wrap(new TermQuery(new Term(fieldName, "19")));
         assertNull(tf.getDocIdSet(reader.getContext(), reader.getLiveDocs()).iterator());
 
-        tf = new QueryWrapperFilter(new TermQuery(new Term(fieldName, "20")));
+        tf = Queries.wrap(new TermQuery(new Term(fieldName, "20")));
         DocIdSet result = tf.getDocIdSet(reader.getContext(), reader.getLiveDocs());
         BitSet bits = DocIdSets.toBitSet(result.iterator(), reader.maxDoc());
         assertThat(bits.cardinality(), equalTo(1));
 
-        tf = new QueryWrapperFilter(new TermQuery(new Term("all", "xxx")));
+        tf = Queries.wrap(new TermQuery(new Term("all", "xxx")));
         result = tf.getDocIdSet(reader.getContext(), reader.getLiveDocs());
         bits = DocIdSets.toBitSet(result.iterator(), reader.maxDoc());
         assertThat(bits.cardinality(), equalTo(100));

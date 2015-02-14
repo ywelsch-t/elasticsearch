@@ -103,7 +103,7 @@ public class XBooleanFilterLuceneTests extends ElasticsearchTestCase {
     }
 
     private Filter getWrappedTermQuery(String field, String text) {
-        return new QueryWrapperFilter(new TermQuery(new Term(field, text)));
+        return Queries.wrap(new TermQuery(new Term(field, text)));
     }
 
     private Filter getEmptyFilter() {

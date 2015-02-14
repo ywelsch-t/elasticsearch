@@ -20,6 +20,7 @@
 package org.elasticsearch.search.fetch.innerhits;
 
 import com.google.common.collect.ImmutableMap;
+
 import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.Term;
@@ -30,6 +31,7 @@ import org.apache.lucene.util.Bits;
 import org.elasticsearch.ExceptionsHelper;
 import org.elasticsearch.common.lucene.Lucene;
 import org.elasticsearch.common.lucene.search.AndFilter;
+import org.elasticsearch.common.lucene.search.Queries;
 import org.elasticsearch.index.fieldvisitor.SingleFieldsVisitor;
 import org.elasticsearch.index.mapper.DocumentMapper;
 import org.elasticsearch.index.mapper.Uid;
@@ -272,7 +274,7 @@ public final class InnerHitsContext {
                     term = (String) fieldsVisitor.fields().get(ParentFieldMapper.NAME).get(0);
                 }
             }
-            Filter filter = new QueryWrapperFilter(new TermQuery(new Term(field, term))); // Only include docs that have the current hit as parent
+            Filter filter = Queries.wrap(new TermQuery(new Term(field, term))); // Only include docs that have the current hit as parent
             Filter typeFilter = documentMapper.typeFilter(); // Only include docs that have this inner hits type.
             context.searcher().search(
                     new FilteredQuery(query, new AndFilter(Arrays.asList(filter, typeFilter))),

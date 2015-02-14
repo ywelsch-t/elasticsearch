@@ -214,7 +214,7 @@ public class TermsFilterParser implements FilterParser {
                     }
                 } else {
                     for (Object term : terms) {
-                        boolFiler.add(parseContext.cacheFilter(new QueryWrapperFilter(new TermQuery(new Term(fieldName, BytesRefs.toBytesRef(term)))), null, parseContext.autoFilterCachePolicy()), BooleanClause.Occur.SHOULD);
+                        boolFiler.add(parseContext.cacheFilter(Queries.wrap(new TermQuery(new Term(fieldName, BytesRefs.toBytesRef(term))), parseContext), null, parseContext.autoFilterCachePolicy()), BooleanClause.Occur.SHOULD);
                     }
                 }
                 filter = boolFiler;
@@ -226,7 +226,7 @@ public class TermsFilterParser implements FilterParser {
                     }
                 } else {
                     for (Object term : terms) {
-                        boolFiler.add(new QueryWrapperFilter(new TermQuery(new Term(fieldName, BytesRefs.toBytesRef(term)))), BooleanClause.Occur.SHOULD);
+                        boolFiler.add(Queries.wrap(new TermQuery(new Term(fieldName, BytesRefs.toBytesRef(term))), parseContext), BooleanClause.Occur.SHOULD);
                     }
                 }
                 filter = boolFiler;
@@ -238,7 +238,7 @@ public class TermsFilterParser implements FilterParser {
                     }
                 } else {
                     for (Object term : terms) {
-                        filters.add(parseContext.cacheFilter(new QueryWrapperFilter(new TermQuery(new Term(fieldName, BytesRefs.toBytesRef(term)))), null, parseContext.autoFilterCachePolicy()));
+                        filters.add(parseContext.cacheFilter(Queries.wrap(new TermQuery(new Term(fieldName, BytesRefs.toBytesRef(term))), parseContext), null, parseContext.autoFilterCachePolicy()));
                     }
                 }
                 filter = new AndFilter(filters);
@@ -250,7 +250,7 @@ public class TermsFilterParser implements FilterParser {
                     }
                 } else {
                     for (Object term : terms) {
-                        filters.add(new QueryWrapperFilter(new TermQuery(new Term(fieldName, BytesRefs.toBytesRef(term)))));
+                        filters.add(Queries.wrap(new TermQuery(new Term(fieldName, BytesRefs.toBytesRef(term))), parseContext));
                     }
                 }
                 filter = new AndFilter(filters);
@@ -262,7 +262,7 @@ public class TermsFilterParser implements FilterParser {
                     }
                 } else {
                     for (Object term : terms) {
-                        filters.add(parseContext.cacheFilter(new QueryWrapperFilter(new TermQuery(new Term(fieldName, BytesRefs.toBytesRef(term)))), null, parseContext.autoFilterCachePolicy()));
+                        filters.add(parseContext.cacheFilter(Queries.wrap(new TermQuery(new Term(fieldName, BytesRefs.toBytesRef(term))), parseContext), null, parseContext.autoFilterCachePolicy()));
                     }
                 }
                 filter = new OrFilter(filters);
@@ -274,7 +274,7 @@ public class TermsFilterParser implements FilterParser {
                     }
                 } else {
                     for (Object term : terms) {
-                        filters.add(new QueryWrapperFilter(new TermQuery(new Term(fieldName, BytesRefs.toBytesRef(term)))));
+                        filters.add(Queries.wrap(new TermQuery(new Term(fieldName, BytesRefs.toBytesRef(term))), parseContext));
                     }
                 }
                 filter = new OrFilter(filters);

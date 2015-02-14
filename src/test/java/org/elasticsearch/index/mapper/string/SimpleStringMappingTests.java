@@ -391,7 +391,7 @@ public class SimpleStringMappingTests extends ElasticsearchSingleNodeTest {
         assertNotNull(mapper);
         assertTrue(mapper instanceof StringFieldMapper);
         assertEquals(Queries.MATCH_NO_FILTER, mapper.termsFilter(Collections.emptyList(), null));
-        assertEquals(new QueryWrapperFilter(new TermQuery(new Term("field", "value"))), mapper.termsFilter(Collections.singletonList("value"), null));
+        assertEquals(Queries.wrap(new TermQuery(new Term("field", "value"))), mapper.termsFilter(Collections.singletonList("value"), null));
         assertEquals(new TermsFilter(new Term("field", "value1"), new Term("field", "value2")), mapper.termsFilter(Arrays.asList("value1", "value2"), null));
     }
 

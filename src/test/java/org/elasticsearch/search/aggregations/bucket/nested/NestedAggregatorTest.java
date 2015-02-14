@@ -32,6 +32,7 @@ import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.common.compress.CompressedString;
 import org.elasticsearch.common.lucene.search.AndFilter;
 import org.elasticsearch.common.lucene.search.NotFilter;
+import org.elasticsearch.common.lucene.search.Queries;
 import org.elasticsearch.index.IndexService;
 import org.elasticsearch.index.mapper.internal.TypeFieldMapper;
 import org.elasticsearch.index.mapper.internal.UidFieldMapper;
@@ -129,7 +130,7 @@ public class NestedAggregatorTest extends ElasticsearchSingleNodeLuceneTestCase 
         // A regular search always exclude nested docs, so we use NonNestedDocsFilter.INSTANCE here (otherwise MatchAllDocsQuery would be sufficient)
         // We exclude root doc with uid type#2, this will trigger the bug if we don't reset the root doc when we process a new segment, because
         // root doc type#3 and root doc type#1 have the same segment docid
-        searcher.search(new ConstantScoreQuery(new AndFilter(Arrays.asList(NonNestedDocsFilter.INSTANCE, new NotFilter(new QueryWrapperFilter(new TermQuery(new Term(UidFieldMapper.NAME, "type#2"))))))), collector);
+        searcher.search(new ConstantScoreQuery(new AndFilter(Arrays.asList(NonNestedDocsFilter.INSTANCE, new NotFilter(Queries.wrap(new TermQuery(new Term(UidFieldMapper.NAME, "type#2"))))))), collector);
         collector.postCollection();
 
         Nested nested = (Nested) aggs[0].buildAggregation(0);

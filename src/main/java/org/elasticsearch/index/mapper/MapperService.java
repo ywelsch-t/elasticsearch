@@ -46,6 +46,7 @@ import org.elasticsearch.common.io.FileSystemUtils;
 import org.elasticsearch.common.io.Streams;
 import org.elasticsearch.common.lucene.search.AndFilter;
 import org.elasticsearch.common.lucene.search.NotFilter;
+import org.elasticsearch.common.lucene.search.Queries;
 import org.elasticsearch.common.lucene.search.XBooleanFilter;
 import org.elasticsearch.common.regex.Regex;
 import org.elasticsearch.common.settings.Settings;
@@ -505,7 +506,7 @@ public class MapperService extends AbstractIndexComponent  {
         // since they have different types (starting with __)
         if (types.length == 1) {
             DocumentMapper docMapper = documentMapper(types[0]);
-            Filter filter = docMapper != null ? docMapper.typeFilter() : new QueryWrapperFilter(new TermQuery(new Term(types[0])));
+            Filter filter = docMapper != null ? docMapper.typeFilter() : Queries.wrap(new TermQuery(new Term(types[0])));
             if (hasNested) {
                 return new AndFilter(ImmutableList.of(filter, NonNestedDocsFilter.INSTANCE));
             } else {
@@ -544,7 +545,7 @@ public class MapperService extends AbstractIndexComponent  {
             for (String type : types) {
                 DocumentMapper docMapper = documentMapper(type);
                 if (docMapper == null) {
-                    bool.add(new FilterClause(new QueryWrapperFilter(new TermQuery(new Term(TypeFieldMapper.NAME, type))), BooleanClause.Occur.SHOULD));
+                    bool.add(new FilterClause(Queries.wrap(new TermQuery(new Term(TypeFieldMapper.NAME, type))), BooleanClause.Occur.SHOULD));
                 } else {
                     bool.add(new FilterClause(docMapper.typeFilter(), BooleanClause.Occur.SHOULD));
                 }

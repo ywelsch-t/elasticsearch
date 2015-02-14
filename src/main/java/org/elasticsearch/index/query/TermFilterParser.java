@@ -27,6 +27,7 @@ import org.apache.lucene.search.TermQuery;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.lucene.BytesRefs;
 import org.elasticsearch.common.lucene.HashedBytesRef;
+import org.elasticsearch.common.lucene.search.Queries;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.index.mapper.MapperService;
 
@@ -113,7 +114,7 @@ public class TermFilterParser implements FilterParser {
             filter = smartNameFieldMappers.mapper().termFilter(value, parseContext);
         }
         if (filter == null) {
-            filter = new QueryWrapperFilter(new TermQuery(new Term(fieldName, BytesRefs.toBytesRef(value))));
+            filter = Queries.wrap(new TermQuery(new Term(fieldName, BytesRefs.toBytesRef(value))), parseContext);
         }
 
         if (cache != null) {
