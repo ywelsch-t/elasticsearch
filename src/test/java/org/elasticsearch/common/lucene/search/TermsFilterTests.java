@@ -58,7 +58,7 @@ public class TermsFilterTests extends ElasticsearchTestCase {
         w.close();
 
         Filter tf = new QueryWrapperFilter(new TermQuery(new Term(fieldName, "19")));
-        assertNull(tf.getDocIdSet(reader.getContext(), reader.getLiveDocs()));
+        assertNull(tf.getDocIdSet(reader.getContext(), reader.getLiveDocs()).iterator());
 
         tf = new QueryWrapperFilter(new TermQuery(new Term(fieldName, "20")));
         DocIdSet result = tf.getDocIdSet(reader.getContext(), reader.getLiveDocs());
