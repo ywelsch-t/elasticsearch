@@ -209,6 +209,12 @@ public class WeightedFilterCache extends AbstractIndexComponent implements Filte
             return "cache(" + filter + ")";
         }
 
+        // nocommit: this toString() situation with Q/F (especially Filter's default impl) is really broken
+        @Override
+        public String toString(String field) {
+            return toString();
+        }
+
         public boolean equals(Object o) {
             if (!(o instanceof FilterCacheFilterWrapper)) return false;
             return this.filter.equals(((FilterCacheFilterWrapper) o).filter);
