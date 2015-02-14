@@ -122,7 +122,8 @@ public class FiltersFunctionScoreQuery extends Query {
     @Override
     public Weight createWeight(IndexSearcher searcher, boolean needsScores) throws IOException {
         Weight subQueryWeight = subQuery.createWeight(searcher, needsScores);
-        if (!needsScores) {
+        // nocommit: don't enable this optimization yet, until we trust tests arent buggy
+        if (false && !needsScores) {
             return subQueryWeight;
         } else {
             return new CustomBoostFactorWeight(this, subQueryWeight, filterFunctions.length);

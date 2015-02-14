@@ -54,7 +54,8 @@ public class AllTermQuery extends SpanTermQuery {
     public Weight createWeight(IndexSearcher searcher, boolean needsScores) throws IOException {
         // TODO: probably doesnt help much, but if we don't need scores, SpanTerm will suffice
         // afraid about what happens if we just return a TermWeight... maybe it works?
-        if (!needsScores) {
+        // nocommit: don't enable this optimization yet, until we trust tests arent buggy
+        if (false && !needsScores) {
             return new SpanTermQuery(term).createWeight(searcher, false);
         } else {
             return new AllTermWeight(this, searcher);
