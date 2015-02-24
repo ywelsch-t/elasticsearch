@@ -579,7 +579,7 @@ public class IndicesClusterStateService extends AbstractLifecycleComponent<Indic
                 }
                 if (shardHasBeenRemoved == false && !shardRouting.equals(indexShard.routingEntry())) {
                     if (shardRouting.primary() && indexShard.routingEntry().primary() == false && shardRouting.initializing() && indexShard.allowsPrimaryPromotion() == false) {
-                        logger.debug("{} reinitialize shared on primary promotion", indexShard.shardId());
+                        logger.debug("{} reinitialize shard on primary promotion", indexShard.shardId());
                         indexService.removeShard(shardId, "promoted to primary");
                     } else {
                         // if we happen to remove the shardRouting by id above we don't need to jump in here!
