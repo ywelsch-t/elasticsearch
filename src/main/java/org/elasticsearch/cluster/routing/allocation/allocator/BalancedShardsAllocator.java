@@ -23,6 +23,7 @@ import com.google.common.base.Predicate;
 import org.apache.lucene.util.ArrayUtil;
 import org.apache.lucene.util.IntroSorter;
 import org.elasticsearch.ElasticsearchIllegalArgumentException;
+import org.elasticsearch.cluster.metadata.IndexMetaData;
 import org.elasticsearch.cluster.metadata.MetaData;
 import org.elasticsearch.cluster.routing.MutableShardRouting;
 import org.elasticsearch.cluster.routing.RoutingNode;
@@ -35,6 +36,7 @@ import org.elasticsearch.cluster.routing.allocation.decider.AllocationDeciders;
 import org.elasticsearch.cluster.routing.allocation.decider.Decision;
 import org.elasticsearch.cluster.routing.allocation.decider.Decision.Type;
 import org.elasticsearch.common.collect.IdentityHashSet;
+import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.component.AbstractComponent;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.logging.ESLogger;
@@ -247,8 +249,17 @@ public class BalancedShardsAllocator extends AbstractComponent implements Shards
     public static class Balancer {
 
         private final ESLogger logger;
+        
+        // All the nodes
         private final Map<String, ModelNode> nodes = new HashMap<>();
-        private final HashSet<String> indices = new HashSet<>();
+        // Nodes partitioned per sub-cluster.
+        private final Map<String, Map<String, ModelNode>> nodesMap = new HashMap<>();
+        // Indices partitioned per sub-cluster.
+        // Indices that do not belong to a sub-cluster are stored under indicesMap[NO_SUB_CLUSTER]
+        private final Map<String, HashSet<String>> indicesMap = new HashMap<>();
+        
+        private static final String NO_SUB_CLUSTER = "NO_SCLUSTER";
+        
         private final RoutingAllocation allocation;
         private final RoutingNodes routingNodes;
         private final WeightFunction weight;
@@ -271,8 +282,22 @@ public class BalancedShardsAllocator extends AbstractComponent implements Shards
             this.threshold = threshold;
             this.routingNodes = allocation.routingNodes();
             for (RoutingNode node : routingNodes) {
-                nodes.put(node.nodeId(), new ModelNode(node.nodeId()));
+                final ModelNode modelNode = new ModelNode(node.nodeId());
+                nodes.put(node.nodeId(), modelNode);
+                
+                // store the model nodes additionally per sub-cluster
+                String subCluster = node.node().subCluster();
+                if (subCluster == null) {
+                    continue;
+                }
+                Map<String, ModelNode> subNodes = nodesMap.get(subCluster);
+                if (subNodes == null) {
+                    subNodes = new HashMap<>();
+                    nodesMap.put(subCluster, subNodes);
+                }
+                subNodes.put(node.nodeId(), modelNode);
             }
+            
             metaData = routingNodes.metaData();
         }
 
@@ -281,6 +306,42 @@ public class BalancedShardsAllocator extends AbstractComponent implements Shards
          */
         private ModelNode[] nodesArray() {
             return nodes.values().toArray(new ModelNode[nodes.size()]);
+        }
+        
+        private ModelNode[] nodesArray(String subCluster) {
+            if (NO_SUB_CLUSTER.equals(subCluster)) {
+                return nodesArray();
+            }
+            Map<String, ModelNode> subClusterNodes = nodesMap.get(subCluster);
+            if (subClusterNodes == null) {
+                return nodesArray();
+            }
+            return subClusterNodes.values().toArray(new ModelNode[subClusterNodes.size()]);
+        }
+        
+        private Comparator<String> subClusterComparator = new Comparator<String>()
+        {            
+            @Override
+            public int compare(String o1, String o2)
+            {
+                final int originalRes = o1.compareTo(o2);
+                if (originalRes == 0) {
+                    return 0;
+                }
+                if (NO_SUB_CLUSTER.equals(o1)) { // NO_SUB_CLUSTER is always last
+                    return 1;
+                }
+                if (NO_SUB_CLUSTER.equals(o2)) { // NO_SUB_CLUSTER is always last
+                    return -1;
+                }
+                return originalRes;
+            }
+        };
+        
+        private List<String> orderedSubClusters(Collection<String> subClusters) {
+            ArrayList<String> subClustersOrdered = new ArrayList<String>(subClusters);
+            Collections.sort(subClustersOrdered, subClusterComparator);
+            return subClustersOrdered;
         }
 
         /**
@@ -320,12 +381,31 @@ public class BalancedShardsAllocator extends AbstractComponent implements Shards
         private NodeSorter newNodeSorter() {
             return new NodeSorter(nodesArray(), weight, this);
         }
+        
+        private NodeSorter newNodeSorter(String subCluster) {
+            return new NodeSorter(nodesArray(subCluster), weight, this);
+        }
 
         private boolean initialize(RoutingNodes routing, RoutingNodes.UnassignedShards unassigned) {
             if (logger.isTraceEnabled()) {
                 logger.trace("Start distributing Shards");
             }
-            indices.addAll(allocation.routingTable().indicesRouting().keySet());
+            
+            ImmutableOpenMap<String, IndexMetaData> clusterStateIndicesMap = allocation.metaData().indices();
+            for (String index : allocation.routingTable().indicesRouting().keySet()) {
+                IndexMetaData imd = clusterStateIndicesMap.get(index);
+                String subCluster = imd != null ? imd.subCluster() : null;
+                if (subCluster == null) {
+                    subCluster = NO_SUB_CLUSTER;
+                }
+                HashSet<String> subIndices = indicesMap.get(subCluster);
+                if (subIndices == null) {
+                    subIndices = new HashSet<>();
+                    indicesMap.put(subCluster, subIndices);
+                }
+                subIndices.add(index);
+            }
+            
             buildModelFromAssigned(routing.shards(assignedFilter));
             return allocateUnassigned(unassigned, routing.ignoredUnassigned());
         }
@@ -367,9 +447,11 @@ public class BalancedShardsAllocator extends AbstractComponent implements Shards
             final RoutingNodes.UnassignedShards unassigned = routingNodes.unassigned().transactionBegin();
             boolean changed = initialize(routingNodes, unassigned);
             if (!changed) {
-                NodeSorter sorter = newNodeSorter();
                 if (nodes.size() > 1) { /* skip if we only have one node */
-                    for (String index : buildWeightOrderedIndidces(Operation.BALANCE, sorter)) {
+                  // do the iteration once per sub-cluster (for which there are indices) and once for indices that are not fixed to any sub-cluster                    
+                  for (String subCluster : orderedSubClusters(indicesMap.keySet())) {
+                    final NodeSorter sorter = newNodeSorter(subCluster);
+                    for (String index : buildWeightOrderedIndidces(Operation.BALANCE, sorter, subCluster)) {
                         sorter.reset(Operation.BALANCE, index);
                         final float[] weights = sorter.weights;
                         final ModelNode[] modelNodes = sorter.modelNodes;
@@ -442,6 +524,7 @@ public class BalancedShardsAllocator extends AbstractComponent implements Shards
                             }
                         }
                     }
+                  }
                 }
             }
             routingNodes.unassigned().transactionEnd(unassigned);
@@ -461,8 +544,9 @@ public class BalancedShardsAllocator extends AbstractComponent implements Shards
          * average. To re-balance we need to move shards back eventually likely
          * to the nodes we relocated them from.
          */
-        private String[] buildWeightOrderedIndidces(Operation operation, NodeSorter sorter) {
-            final String[] indices = this.indices.toArray(new String[this.indices.size()]);
+        private String[] buildWeightOrderedIndidces(Operation operation, NodeSorter sorter, String subCluster) {
+            final HashSet<String> subIndices = this.indicesMap.get(subCluster);
+            final String[] indices = subIndices.toArray(new String[subIndices.size()]);
             final float[] deltas = new float[indices.length];
             for (int i = 0; i < deltas.length; i++) {
                 sorter.reset(operation, indices[i]);
@@ -597,8 +681,7 @@ public class BalancedShardsAllocator extends AbstractComponent implements Shards
             if (unassigned.isEmpty()) {
                 return false;
             }
-            boolean changed = false;
-          
+            
             /*
              * TODO: We could be smarter here and group the shards by index and then
              * use the sorter to save some iterations. 
@@ -618,6 +701,38 @@ public class BalancedShardsAllocator extends AbstractComponent implements Shards
                     return indexCmp;
                 }
             };
+            boolean changed = false;
+            
+            // Partition shards into sub-clusters (same as for indicesMap)
+            MutableShardRouting[] shards = unassigned.drain();
+            Map<String, List<MutableShardRouting>> shardPartitioning = new HashMap<>();
+            for (MutableShardRouting shard : shards) {
+                String shardSubCluster = allocation.metaData().index(shard.getIndex()).subCluster();
+                if (shardSubCluster == null) {
+                    shardSubCluster = NO_SUB_CLUSTER;
+                }
+                List<MutableShardRouting> subClusterShards = shardPartitioning.get(shardSubCluster);
+                if (subClusterShards == null) {
+                    subClusterShards = new ArrayList<>();
+                    shardPartitioning.put(shardSubCluster, subClusterShards);
+                }
+                subClusterShards.add(shard);
+            }
+            
+            // call allocateUnassigned() for each sub-cluster 
+            for (String shardSubCluster : orderedSubClusters(shardPartitioning.keySet())) {
+                List<MutableShardRouting> subClusterShardsList = shardPartitioning.get(shardSubCluster);
+                final ModelNode[] subClusterNodes = nodesArray(shardSubCluster);
+                final MutableShardRouting[] subClusterShards = subClusterShardsList.toArray(new MutableShardRouting[subClusterShardsList.size()]);
+                changed = allocateUnassigned(subClusterShards, ignoredUnassigned, subClusterNodes, deciders, comparator) || changed; // "OR changed" appended due to lazy eval.
+            }
+
+            return changed;
+        }
+
+        private boolean allocateUnassigned(MutableShardRouting[] primary, List<MutableShardRouting> ignoredUnassigned, ModelNode[] subClusterNodes, final AllocationDeciders deciders, final Comparator<MutableShardRouting> comparator)
+        {
+            boolean changed = false;
             /*
              * we use 2 arrays and move replicas to the second array once we allocated an identical
              * replica in the current iteration to make sure all indices get allocated in the same manner.
@@ -626,7 +741,6 @@ public class BalancedShardsAllocator extends AbstractComponent implements Shards
              * if we allocate for instance (0, R, IDX1) we move the second replica to the secondary array and proceed with
              * the next replica. If we could not find a node to allocate (0,R,IDX1) we move all it's replicas to ingoreUnassigned.
              */
-            MutableShardRouting[] primary = unassigned.drain();
             MutableShardRouting[] secondary = new MutableShardRouting[primary.length];
             int secondaryLength = 0;
             int primaryLength = primary.length;
@@ -654,10 +768,10 @@ public class BalancedShardsAllocator extends AbstractComponent implements Shards
                     float minWeight = Float.POSITIVE_INFINITY;
                     ModelNode minNode = null;
                     Decision decision = null;
-                    if (throttledNodes.size() < nodes.size()) {
+                    if (throttledNodes.size() < subClusterNodes.length) {
                         /* Don't iterate over an identity hashset here the
                          * iteration order is different for each run and makes testing hard */
-                        for (ModelNode node : nodes.values()) {
+                        for (ModelNode node : subClusterNodes) {
                             if (throttledNodes.contains(node)) {
                                 continue;
                             }
@@ -945,7 +1059,6 @@ public class BalancedShardsAllocator extends AbstractComponent implements Shards
             ModelIndex index = getIndex(shard.getIndex());
             return index == null ? false : index.containsShard(shard);
         }
-
     }
 
     static final class ModelIndex {

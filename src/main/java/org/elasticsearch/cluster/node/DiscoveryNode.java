@@ -44,6 +44,8 @@ import static org.elasticsearch.common.transport.TransportAddressSerializers.add
  */
 public class DiscoveryNode implements Streamable, Serializable {
 
+    public static final String SUBCLUSTER_FIELD_NAME = "node_type";
+
     /**
      * Minimum version of a node to communicate with. This version corresponds to the minimum compatibility version
      * of the current elasticsearch major version.
@@ -101,6 +103,7 @@ public class DiscoveryNode implements Streamable, Serializable {
     private TransportAddress address;
     private ImmutableMap<String, String> attributes;
     private Version version = Version.CURRENT;
+    private String subCluster;
 
     DiscoveryNode() {
     }
@@ -164,6 +167,7 @@ public class DiscoveryNode implements Streamable, Serializable {
             builder.put(entry.getKey().intern(), entry.getValue().intern());
         }
         this.attributes = builder.build();
+        preCalculateSubCluster();
         this.nodeId = nodeId.intern();
         this.hostName = hostName.intern();
         this.hostAddress = hostAddress.intern();
@@ -300,6 +304,17 @@ public class DiscoveryNode implements Streamable, Serializable {
     public Version getVersion() {
         return this.version;
     }
+    
+    // caching for the sub-cluster value
+    private void preCalculateSubCluster()
+    {
+        String subClusterString = attributes.get(SUBCLUSTER_FIELD_NAME);
+        this.subCluster = Strings.isEmpty(subClusterString) ? null : subClusterString.intern();
+    }
+    
+    public String subCluster() {
+        return subCluster;
+    }
 
     public static DiscoveryNode readNode(StreamInput in) throws IOException {
         DiscoveryNode node = new DiscoveryNode();
@@ -320,6 +335,7 @@ public class DiscoveryNode implements Streamable, Serializable {
             builder.put(in.readString().intern(), in.readString().intern());
         }
         attributes = builder.build();
+        preCalculateSubCluster();
         version = Version.readVersion(in);
     }
 

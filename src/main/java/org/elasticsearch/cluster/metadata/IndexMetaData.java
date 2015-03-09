@@ -21,12 +21,13 @@ package org.elasticsearch.cluster.metadata;
 
 import com.carrotsearch.hppc.cursors.ObjectCursor;
 import com.carrotsearch.hppc.cursors.ObjectObjectCursor;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import org.elasticsearch.ElasticsearchIllegalArgumentException;
 import org.elasticsearch.ElasticsearchIllegalStateException;
-import org.elasticsearch.Version;
 import org.elasticsearch.cluster.block.ClusterBlock;
 import org.elasticsearch.cluster.block.ClusterBlockLevel;
+import org.elasticsearch.cluster.node.DiscoveryNode;
 import org.elasticsearch.cluster.node.DiscoveryNodeFilters;
 import org.elasticsearch.common.Nullable;
 import org.elasticsearch.common.Preconditions;
@@ -183,6 +184,8 @@ public class IndexMetaData {
     private final DiscoveryNodeFilters requireFilters;
     private final DiscoveryNodeFilters includeFilters;
     private final DiscoveryNodeFilters excludeFilters;
+    
+    private final String subCluster;
 
     private IndexMetaData(String index, long version, State state, Settings settings, ImmutableOpenMap<String, MappingMetaData> mappings, ImmutableOpenMap<String, AliasMetaData> aliases, ImmutableOpenMap<String, Custom> customs) {
         Preconditions.checkArgument(settings.getAsInt(SETTING_NUMBER_OF_SHARDS, null) != null, "must specify numberOfShards for index [" + index + "]");
@@ -214,6 +217,8 @@ public class IndexMetaData {
         } else {
             excludeFilters = DiscoveryNodeFilters.buildFromKeyValue(OR, excludeMap);
         }
+        
+        this.subCluster = Strings.emptyToNull(requireMap.get(DiscoveryNode.SUBCLUSTER_FIELD_NAME));        
     }
 
 
@@ -297,6 +302,10 @@ public class IndexMetaData {
     public Settings settings() {
         return settings;
     }
+    
+    public String subCluster() {
+        return subCluster;
+    }    
 
     public Settings getSettings() {
         return settings();
